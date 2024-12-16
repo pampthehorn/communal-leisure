@@ -1,0 +1,57 @@
+﻿@using Umbraco.Cms.Core.Security
+@using Umbraco.Cms.Core.Services
+@using Umbraco.Cms.Web.Common.PublishedModels;
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.Create>
+@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
+@inject IPublishedValueFallback _ipvfb;
+@inject IMemberManager _memberManager;
+@inject IMemberService _memberService;
+
+@{
+    Layout = "_Layout.cshtml";
+
+    List<Event> events = new List<Event>();
+    var isLoggedIn = Context.User?.Identity?.IsAuthenticated ?? false;
+    MemberIdentityUser currentUser = null;
+    if (isLoggedIn)
+    {
+        currentUser = await _memberManager.GetCurrentMemberAsync();
+    }
+    events = Model.Children().Select(m => new Event(m, _ipvfb))
+    .Where(m => m.StartDate > DateTime.Today.AddDays(-1))
+    .OrderBy(m => m.StartDate)
+    // .Where(m => m.Organizer!=null&&_memberManager.FindByIdAsync(m.Organizer.Id.ToString()).Result.Email == currentUser.Email)
+    .ToList();
+}
+
+
+
+@if (isLoggedIn)
+{
+    <h3>Upload an event</h3>
+}
+else
+{
+    <h3>Submit an event</h3>
+    <p>This will submit your event for review.</p>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+@Html.Partial("~/Views/Partials/CreateEventForm.cshtml", new Event(Model, _ipvfb))
+
+
+
+

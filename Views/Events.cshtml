@@ -1,0 +1,99 @@
+﻿@using Umbraco.Cms.Core.Security
+@using Umbraco.Cms.Core.Services
+@using Umbraco.Cms.Web.Common.PublishedModels;
+@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<EventsViewModel>
+@inject IPublishedValueFallback _ipvfb;
+@inject IMemberManager _memberManager;
+@inject IMemberService _memberService;
+@model EventsViewModel
+
+@{
+    Layout = "_Layout.cshtml";
+
+}
+
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<div>
+    <div>
+        <form method="get">
+           @*  <label for="SelectedTag">Tag:</label> *@
+            <select id="SelectedTag" name="SelectedTag">
+                <!option value="everything" @(Model.SelectedTag == "everything" ? "selected" : "")>Everything</!option>
+                @foreach(var tag in Model.Tags)
+                {
+                    <!option value="@tag" @(Model.SelectedTag == tag ? "selected" : "")>@tag</!option>
+                }
+            </select>
+
+@*             <label for="SelectedCity">City:</label>
+ *@            <select id="SelectedCity" name="SelectedCity">
+                <!option value="everywhere" @(Model.SelectedCity == "everywhere" ? "selected" : "")>Everywhere</!option>
+                @foreach(var city in Model.Cities)
+                {
+                    <!option value="@city" @(Model.SelectedCity == city ? "selected" : "")>@city</!option>
+                }
+            </select>
+
+            <input type="hidden" name="PageNumber" value="1" />
+
+            <button type="submit">Filter</button>
+        </form>
+
+        <a href="/add-event">Add Event</a>
+
+        <ul class="listing" id="events">
+            @if (Model.Events != null && Model.Events.Count > 0)
+            {
+                foreach (var e in Model.Events)
+                {
+                    var startDate = e.startDate.ToUniversalTime();
+                    var endDate = e.endDate.ToUniversalTime();
+                    string displayDate = $"{startDate:R} - {(startDate.Date != endDate.Date ? endDate.ToString("R") : endDate.ToString("HH:mm"))}";
+
+                  <li class="event">
+                        <a href="@e.url">
+                            <img src="@($"{e.poster.Url}?width=400&quality=80")" alt="@e.name" />
+                            </a>
+                        <h5>
+                            <span title="add to calendar">📅</span>
+                            <time>@displayDate</time>
+                        </h5>
+                        <h2>@e.name</h2>
+                        <p>@e.description</p>
+                        <p>@e.venue</p>
+                        <a href="@e.link" target="_blank">@e.link</a>
+                    </li>
+                }
+            }
+            else
+            {
+                <li>No events found.</li>
+            }
+        </ul>
+
+        @if (Model.Events.Count == 5)
+        {
+            <form method="get">
+                <input type="hidden" name="SelectedTag" value="@Model.SelectedTag" />
+                <input type="hidden" name="SelectedCity" value="@Model.SelectedCity" />
+                <input type="hidden" name="PageNumber" value="@(Model.PageNumber + 1)" />
+                <button type="submit">Load More</button>
+            </form>
+        }
+    </div>
+</div>

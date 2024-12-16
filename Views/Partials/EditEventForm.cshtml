@@ -1,0 +1,133 @@
+﻿@model Event
+@inject IPublishedValueFallback _ipvfb;
+@{
+    var events = new Events(Model.Parent, _ipvfb);
+    var tags = events?.Tags?.Select(m=> new Tag(m,_ipvfb));
+    var venues = events.Siblings().FirstOrDefault(m => m.IsDocumentType(Venues.ModelTypeAlias)).DescendantsOfType(Venue.ModelTypeAlias).Select(m => new Venue(m, _ipvfb));
+
+    List<string> statuses = new List<string>() { "Going Ahead","Cancelled","Postponed"};
+}
+<div id="eventform">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+@using (Html.BeginUmbracoForm("EditEvent", "EventSurface"))
+{
+    <input type="hidden" name="nodeId" id="nodeId" value="@Model.Id"/>
+        <div>
+            @if (Model.Poster != null)
+            {
+                <img src="@Model.Poster.Url()?width=300" /><br/>
+            }
+            <label asp-for="Poster">Event Poster:</label>
+            <input asp-for="Poster" type="file" accept="image/*" />
+            <span asp-validation-for="Poster" class="text-danger"></span>
+        </div>
+        <div>
+            <label asp-for="StartDate">Start Date:</label>
+            <input asp-for="StartDate" type="datetime-local" />
+            <span asp-validation-for="StartDate" class="text-danger"></span>
+        </div>
+        <div>
+            <label asp-for="EndDate">End Date:</label>
+            <input asp-for="EndDate" type="datetime-local" />
+            <span asp-validation-for="EndDate" class="text-danger"></span>
+        </div>
+        <div>
+            <label asp-for="Acts">Acts:</label>
+            <input asp-for="Acts" type="text" />
+            <span asp-validation-for="Acts" class="text-danger"></span>
+        </div>
+        <div>
+            <label asp-for="Venue">Venue:</label>
+            <input asp-for="Venue" type="text" list="venues" />
+            <span asp-validation-for="Venue" class="text-danger"></span>
+            <datalist id="venues">
+                @foreach (var venue in venues)
+                {
+                    <option value="@venue.Name, @venue.City">@venue.Name, @venue.City</option>
+                }
+            </datalist>
+        </div>
+        <div>
+            <label asp-for="Description">Info (cost/access etc):</label><br/>
+            <textarea asp-for="Description" maxlength="280"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+        @if (tags != null)
+        {
+            List<Guid> tagKeys = new List<Guid>();
+            List<string> tagStrings = new List<string>();
+            string tagsString = "";
+
+            if (Model.Tags != null)
+            {
+                tagKeys = Model.Tags.Select(m => m.Key).ToList();
+                tagStrings = Model.Tags.Select(m => m.Key.ToString()).ToList();
+                if (tagStrings.Any())
+                {
+                    tagsString = tagStrings.Aggregate((a, b) => a + "," + b);
+                }
+            }
+            <div>
+                <label for="tagSelect">Tags:</label>
+                <select id="tagSelect" multiple="multiple">
+                    @foreach (var tag in tags)
+                    {
+                        if (tagKeys.Contains(tag.Key))
+                        {
+                            <option value="@tag.Key" selected>@tag.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@tag.Key">@tag.Name</option>
+                        }
+                    }
+                </select>
+                <input type="hidden" id="Tags" name="Tags" value="@tagsString" />
+            </div>
+        }
+        <div>
+            <label asp-for="Link">Link:</label>
+            <input asp-for="Link" type="url" />
+            <span asp-validation-for="Link" class="text-danger"></span>
+        </div>
+        <div>
+            <label asp-for="Email">Email:</label>
+            <input asp-for="Email" type="email" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+        <div>
+            <label asp-for="Status">Status:</label>
+            <select id="Status" name="Status" value="@Model.Status">
+                @foreach (var status in statuses)
+                {
+                    @if (status == Model.Status)
+                    {
+                        <option selected>@status</option>
+                    }
+                    else
+                    {
+                        <option>@status</option>
+                    }
+                }
+        
+                </select>
+        </div>
+        <div>
+            <input type="submit" value="Save" />
+        </div>
+}
+
+</div>

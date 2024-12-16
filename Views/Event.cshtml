@@ -1,0 +1,54 @@
+﻿@using Umbraco.Cms.Core.Security
+@using Umbraco.Cms.Core.Services
+@using Umbraco.Cms.Web.Common.PublishedModels;
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.Event>
+@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
+@inject IPublishedValueFallback _ipvfb;
+@inject IMemberManager _memberManager;
+@inject IMemberService _memberService;
+
+@{
+    Layout = "_Layout.cshtml";
+
+    string editKey = Context.Request.Query["key"];
+
+    List<Event> events = new List<Event>();
+    var isLoggedIn = Context.User?.Identity?.IsAuthenticated ?? false;
+    bool isMyEvent = false;
+    if (isLoggedIn)
+    {
+        var currentUser = await _memberManager.GetCurrentMemberAsync();
+        isMyEvent = Model.Organizer != null && _memberManager.FindByIdAsync(Model.Organizer.Id.ToString()).Result.Email == currentUser.Email;
+
+    }
+    if (!Model.EditKey.IsNullOrWhiteSpace() && editKey == Model.EditKey)
+    {
+        isMyEvent = true;
+    }
+
+    var startDate = Model.StartDate.ToUniversalTime();
+    var endDate = Model.EndDate.ToUniversalTime();
+                    string displayDate = $"{startDate:R} - {(startDate.Date != endDate.Date ? endDate.ToString("R") : endDate.ToString("HH:mm"))}";
+
+
+}
+
+
+<img src="@($"{Model.Poster.Url()}?width=400&quality=80")" alt="@Model.Name" />
+                            </a>
+                        <h5>
+                            <time>@displayDate</time>
+                        </h5>
+<h2>@Model.Name</h2>
+<p>@Model.Description</p>
+<p>@Model.Venue</p>
+                        <a href="@Model.Link" target="_blank">@Model.Link</a>
+
+
+
+@if (isMyEvent)
+{
+
+    @Html.Partial("~/Views/Partials/EditEventForm.cshtml", new Event(Model, _ipvfb))
+
+}

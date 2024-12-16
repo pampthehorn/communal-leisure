@@ -1,0 +1,31 @@
+﻿ul {
+    display: flex;
+    flex-flow: wrap;
+    justify-content: center;
+}
+
+li {
+    padding: 3px;
+    margin: 5px;
+    background-color: white;
+    width: 400px;
+    list-style-type: none;
+    max-width: 100%;
+}
+
+ul li img {
+    max-width: 100%;
+}
+
+ul li {
+    list-style-type: none;
+}
+
+#eventform div {
+    padding: 5px;
+}
+
+.alert-success {
+    background: lightgreen;
+    padding: 5px;
+}

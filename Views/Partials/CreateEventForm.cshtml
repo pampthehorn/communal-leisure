@@ -1,0 +1,83 @@
+﻿@using System.Web
+@using Umbraco.Cms.Web.Common
+@inject IPublishedValueFallback _ipvfb;
+@inject UmbracoHelper _helper;
+@model Event
+
+<div id="eventform">
+    
+@using (Html.BeginUmbracoForm("SubmitEvent", "EventSurface"))
+{
+        var startDate = DateTime.Today.AddHours(20).ToString("yyyy-MM-ddTHH:mm");
+        var endDate = DateTime.Today.AddHours(23).ToString("yyyy-MM-ddTHH:mm");
+        var events = new Events(_helper.ContentAtRoot().First(m=>m.IsDocumentType("events")), _ipvfb);
+        var tags = events?.Tags?.Select(m => new Tag(m, _ipvfb));
+        var tagSelectList = tags?.Select(m => new SelectListItem(m.Name, m.Id.ToString()));
+        var venues = events.Siblings().FirstOrDefault(m=>m.IsDocumentType(Venues.ModelTypeAlias)).DescendantsOfType(Venue.ModelTypeAlias).Select(m=> new Venue(m,_ipvfb));
+
+
+        <div>
+            <label asp-for="Poster">Event Poster:</label>
+            <input asp-for="Poster" type="file" accept="image/*" />
+            <span asp-validation-for="Poster" class="text-danger"></span>
+        </div>
+        <div>
+            <label asp-for="StartDate">Start Date:</label>
+            <input asp-for="StartDate" type="datetime-local" value="@startDate" />
+            <span asp-validation-for="StartDate" class="text-danger"></span>
+        </div>
+        <div>
+            <label asp-for="EndDate">End Date:</label>
+            <input asp-for="EndDate" type="datetime-local" value="@endDate"/>
+            <span asp-validation-for="EndDate" class="text-danger"></span>
+        </div>
+        <div>
+            <label asp-for="Acts">Acts:</label>
+            <input asp-for="Acts" type="text" />
+            <span asp-validation-for="Acts" class="text-danger"></span>
+        </div>
+        <div>
+            <label asp-for="Venue">Venue:</label>
+            <input asp-for="Venue" type="text" list="venues" />
+            <span asp-validation-for="Venue" class="text-danger"></span>
+            <datalist id="venues">
+                @foreach(var venue in venues)
+                {
+                    <option value="@venue.Name, @venue.City">@venue.Name, @venue.City</option>
+                }
+            </datalist>
+        </div>
+        @if (tags != null)
+        {
+            <div>
+            <label for="tagSelect">Tags:</label>
+            <select id="tagSelect" multiple="multiple">
+                @foreach(var tag in tags)
+                {
+                <option value="@tag.Key">@tag.Name</option>    
+                }
+            </select>
+                <input type="hidden" id="Tags" name="Tags" />
+            </div>
+        }
+        <div>
+            <label asp-for="Link">Link:</label>
+            <input asp-for="Link" type="url" />
+            <span asp-validation-for="Link" class="text-danger"></span>
+        </div>
+        <div>
+            <label asp-for="Description">Info (cost/access etc):</label><br/>
+            <textarea asp-for="Description" maxlength="280" rows="4" cols="50"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+        <div>
+            <label asp-for="Email">Email:</label>
+            <input asp-for="Email" type="email" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+        <div>
+            <input type="submit" value="Submit Event" />
+        </div>
+}
+
+</div>

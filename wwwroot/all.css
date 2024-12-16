@@ -1,0 +1,102 @@
+@font-face {
+    font-family: 'benguiat';
+    src: url('fonts/Benguiat.eot');
+    src: local('?~X?'), url('fonts/Benguiat.woff') format('woff'), url('fonts/Benguiat.ttf') format('truetype'), url('fonts/Benguiat.svg') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+h1,
+.customFont {
+    font-family: 'benguiat';
+}
+
+h1 {
+    text-transform: uppercase
+}
+
+
+
+h5 span:hover {
+    cursor: pointer;
+}
+
+h5 span{
+    filter: grayscale(100%);
+}
+
+body {
+    text-align: center;
+    font-family:monospace;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.eventControls {
+    margin-top: 1em;
+}
+
+.listing {
+    display: flex;
+    flex-flow: wrap;
+    justify-content: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding-left: 0px;
+}
+
+.listing>* {
+    padding: 3px;
+    margin: 5px;
+    background-color: white;
+    width: 400px;
+    list-style-type: none;
+    max-width: 100%
+}
+
+.listing img {
+    max-width: 100%;
+}
+
+.listing p {
+    word-wrap: break-word;
+}
+
+#zines img {
+    max-width: 100%;
+}
+
+@keyframes App-logo-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+fieldset label,
+fieldset input,
+fieldset select {
+    padding: 5px
+}
+
+code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+a {
+    color: black;
+    word-wrap: break-word;
+}
+
+
+#eventform div {
+    padding: 5px;
+}
+
+.alert-success {
+    background: lightgreen;
+    padding: 5px;
+}

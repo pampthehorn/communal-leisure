@@ -1,0 +1,83 @@
+@using Umbraco.Extensions
+@using Umbraco.Cms.Web.Common.PublishedModels
+@using Umbraco.Cms.Web.Common.Views
+@using Umbraco.Cms.Core.Models.PublishedContent
+@using Microsoft.AspNetCore.Html
+
+<head>
+
+	<meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
+
+	<meta charset="utf-8">
+	<link rel="shortcut icon" href="/favicon.ico">
+	<meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
+	<meta name="theme-color" content="#000000">
+	<link rel="manifest" href="/manifest.json">
+	<title>Communal Leisure</title>
+	<meta name="description" content="DIY events in Glasgow and Edinburgh">
+	<link href="/all.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+@RenderBody()
+
+<hr/>
+<footer>
+        <a href="/"><img src="/img/rabbit.png" alt="Communal Leisure rabbit illustration" /></a>
+
+        <h1>Communal Leisure</h1>
+
+
+        <p>
+            Communal Leisure is a space for discussion and sharing of music, art and politics, based in Glasgow. This Events Wall
+            aims to primarily focus on independent promoters and DIY events, particularly if they are not-for-profit, free or cheap,
+            creating space or platforms for oppressed groups, anti-capitalist, anti-racist, Queer and generally just bringing good
+            stuff and people to the city. We see this in a broad way and don't want to be too earnest about things, but felt like a
+            space to see these kinds of events was missing in Glasgow and didn't want to rely on corporate platforms and social
+            media. There is a small collective keeping the events wall going, if you'd like to get involved or apply for a login to
+            submit your own events please contact:
+        </p>
+        <p class="customFont"><a href="mailto:communalleisure@gmail.com">communalleisure@gmail.com</a></p>
+
+        <div id="mc_embed_signup">
+            <form action="//communalleisure.us13.list-manage.com/subscribe/post?u=fd524c88c6694324051a45384&amp;id=e4cd63a47b"
+                  method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate"
+                  target="_blank">
+                <div id="mc_embed_signup_scroll">
+                    <div class="mc-field-group">
+                        <p>
+                            <label for="mce-EMAIL">mailing list </label><input type="email" name="EMAIL" class="required email"
+                                                                               placeholder="your email address" id="mce-EMAIL" value=""><input type="submit" name="subscribe"
+                                                                                                                                               id="mc-embedded-subscribe">
+                            <div data-lastpass-icon-root="true"
+                                 style="position: relative !important; height: 0px !important; width: 0px !important; float: left !important;">
+                            </div>
+                        </p>
+                    </div>
+                    <div id="mce-responses" class="clear">
+                        <div class="response" id="mce-error-response" style="display: none;"></div>
+                        <div class="response" id="mce-success-response" style="display: none;"></div>
+                    </div>
+                    <div aria-hidden="true" style="position: absolute; left: -5000px;">
+                        <input type="text"
+                               name="b_fd524c88c6694324051a45384_e4cd63a47b" tabindex="-1" value="">
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <p><a href="/zines/index.html">Communal Leisure zine archive</a></p>
+</footer>
+
+    <footer>
+        @Html.Partial("~/Views/Partials/Logout.cshtml")
+    </footer>
+
+
+<script src="/script.js"></script>
+    <script src="/all.js"></script>
+    <script src="/calendar.js"></script>
+
+</body>
