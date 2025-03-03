@@ -4,24 +4,37 @@
 @using Umbraco.Cms.Core.Models.PublishedContent
 @using Microsoft.AspNetCore.Html
 
+<html lang="en">
+
 <head>
 
 	<meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
 
 	<meta charset="utf-8">
 	<link rel="shortcut icon" href="/favicon.ico">
-	<meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
 	<meta name="theme-color" content="#000000">
 	<link rel="manifest" href="/manifest.json">
 	<title>Communal Leisure</title>
     <meta name="description" content="Glasgow/Edinburgh DIY Event Listings">
 	<link href="/all.css" rel="stylesheet">
 
+    <meta property="og:title" content="Communal Leisure">
+    <meta property="og:description" content="Glasgow/Edinburgh DIY Event Listings">
+    <meta property="og:image" content="https://communalleisure.com/img/rabbit.png">
+    <meta property="og:url" content="https://communalleisure.com">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Communal Leisure">
+    <meta name="twitter:description" content="Glasgow/Edinburgh DIY Event Listings">
+    <meta name="twitter:image" content="https://communalleisure.com/img/rabbit.png">
+
 </head>
 
 <body>
     <header>
-        <a href="/"><img src="/img/rabbit.png" alt="Communal Leisure rabbit illustration" /></a>
+        <a href="/"><img src="/img/rabbit.png" alt="Communal Leisure rabbit illustration by Oliver Pitt" /></a>
 
         <h1>Communal Leisure</h1>
         <p>Glasgow/Edinburgh DIY Event Listings</p>
@@ -88,3 +101,4 @@
     <script type="module" src="/calendar.js"></script>
 
 </body>
+</html>
