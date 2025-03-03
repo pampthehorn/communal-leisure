@@ -9,7 +9,7 @@ using Umbraco.Cms.Web.Common;
 
 public class EventsController : RenderController
 {
-    private const int PageSize = 25;
+    private const int PageSize = 100;
     private readonly IPublishedValueFallback _ipvfb;
     private readonly UmbracoHelper _umbracoHelper;
 

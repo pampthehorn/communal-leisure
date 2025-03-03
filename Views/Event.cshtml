@@ -21,7 +21,7 @@
         isMyEvent = Model.Organizer != null && _memberManager.FindByIdAsync(Model.Organizer.Id.ToString()).Result.Email == currentUser.Email;
 
     }
-    if (!Model.EditKey.IsNullOrWhiteSpace() && editKey == Model.EditKey)
+    else if (!Model.EditKey.IsNullOrWhiteSpace() && editKey == Model.EditKey)
     {
         isMyEvent = true;
     }
