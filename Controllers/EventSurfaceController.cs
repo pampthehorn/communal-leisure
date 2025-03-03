@@ -22,7 +22,6 @@
     using System.Threading.Tasks;
     using System.Net.Mail;
     using System.Net;
-
     using Umbraco.Cms.Web.Common;
     using Umbraco.Cms.Core.Models.PublishedContent;
     using Newtonsoft.Json;

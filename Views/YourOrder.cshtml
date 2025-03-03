@@ -1,0 +1,84 @@
+﻿@using System.Globalization
+@using website.Models
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<YourOrderViewModel>
+@{
+    Layout = "_Layout.cshtml";
+    var cultureInfo = new CultureInfo("en-GB");
+}
+
+<div class="container my-5">
+    @if (Model.Order != null && Model.Tickets.Any())
+    {
+        <div class="text-center mb-4">
+            @* You can now access Umbraco fields (like a page title) directly from the model! *@
+            @* Example: <h1>@Model.Value("pageTitle")</h1> *@
+            <h1 class="display-4">✅ Thank You for Your Order!</h1>
+            <p class="lead">Your payment was successful and your order is complete. A confirmation receipt has been sent to <strong>@Model.Order.CustomerEmail</strong>.</p>
+        </div>
+
+        <hr />
+
+        <div class="row mt-4">
+            <div class="col-md-8 offset-md-2">
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h2>Order Summary</h2>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Order ID:</strong> #@Model.Order.Id</p>
+                        <p><strong>Order Date:</strong> @Model.Order.CreatedDate.ToString("D", cultureInfo)</p>
+                        <p><strong>Total Amount:</strong> @((Model.Order.TotalAmount / 100.0).ToString("C", cultureInfo))</p>
+                        <p><strong>Status:</strong> <span class="badge bg-success">@Model.Order.Status</span></p>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h2>Your Tickets</h2>
+                    </div>
+                    <div class="card-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Event</th>
+                                    <th>Ticket Type</th>
+                                    <th class="text-center">Quantity</th>
+                                    <th class="text-end">Price</th>
+                                    <th class="text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var ticket in Model.Tickets)
+                                {
+                                    <tr>
+                                        <td>@ticket.EventName</td>
+                                        <td>@ticket.Type</td>
+                                        <td class="text-center">@ticket.Quantity</td>
+                                        <td class="text-end">@((ticket.Cost / 100.0).ToString("C", cultureInfo))</td>
+                                        <td class="text-end">@((ticket.Quantity * ticket.Cost / 100.0).ToString("C", cultureInfo))</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr class="fw-bold">
+                                    <td colspan="4" class="text-end">Grand Total</td>
+                                    <td class="text-end">@((Model.Order.TotalAmount / 100.0).ToString("C", cultureInfo))</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center">
+            <h2>Order Not Found</h2>
+            <p>We couldn't retrieve your order details. Please check your email for a confirmation or contact support.</p>
+            <a href="/" class="btn btn-primary">Go to Homepage</a>
+        </div>
+    }
+</div>
