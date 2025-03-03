@@ -10,7 +10,7 @@
 
 @{
     Layout = "_Layout.cshtml";
-
+    var dateFormat = "ddd d MMM HH:mm";
 }
 
 
@@ -29,9 +29,9 @@
 }
 
 <div>
-    <div>
-        <form method="get">
-           @*  <label for="SelectedTag">Tag:</label> *@
+    <nav>
+        <form method="get" id="filters">
+            Filters: 
             <select id="SelectedTag" name="SelectedTag">
                 <!option value="everything" @(Model.SelectedTag == "everything" ? "selected" : "")>Everything</!option>
                 @foreach(var tag in Model.Tags)
@@ -40,8 +40,7 @@
                 }
             </select>
 
-@*             <label for="SelectedCity">City:</label>
- *@            <select id="SelectedCity" name="SelectedCity">
+        <select id="SelectedCity" name="SelectedCity">
                 <!option value="everywhere" @(Model.SelectedCity == "everywhere" ? "selected" : "")>Everywhere</!option>
                 @foreach(var city in Model.Cities)
                 {
@@ -51,11 +50,11 @@
 
             <input type="hidden" name="PageNumber" value="1" />
 
-            <button type="submit">Filter</button>
-        </form>
+@*             <button type="submit">Filter</button>
+ *@        </form>
 
         <a href="/add-event">Add Event</a>
-
+    </nav>
         <ul class="listing" id="events">
             @if (Model.Events != null && Model.Events.Count > 0)
             {
@@ -63,7 +62,7 @@
                 {
                     var startDate = e.startDate.ToUniversalTime();
                     var endDate = e.endDate.ToUniversalTime();
-                    string displayDate = $"{startDate:R} - {(startDate.Date != endDate.Date ? endDate.ToString("R") : endDate.ToString("HH:mm"))}";
+                    string displayDate = $"{startDate.ToString(dateFormat)} - {(startDate.Date != endDate.Date ? endDate.ToString(dateFormat) : endDate.ToString("HH:mm"))}";
 
                   <li class="event">
                         <a href="@e.url">
@@ -95,5 +94,5 @@
                 <button type="submit">Load More</button>
             </form>
         }
-    </div>
+  
 </div>

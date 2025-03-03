@@ -12,21 +12,29 @@ h1,
 }
 
 h1 {
-    text-transform: uppercase
+    text-transform: uppercase;
+    margin:0px;
 }
 
 
+header {
+    text-align: center;
+}
+
+footer {
+    text-align: center;
+}
+
+nav {
+text-align:center;
+}
 
 h5 span:hover {
     cursor: pointer;
 }
 
-h5 span{
-    filter: grayscale(100%);
-}
 
 body {
-    text-align: center;
     font-family:monospace;
     max-width: 100%;
     overflow-x: hidden;
@@ -61,6 +69,39 @@ body {
 .listing p {
     word-wrap: break-word;
 }
+
+.event h5, .event h2, .event p {
+border-bottom: 1px dashed red;
+margin-bottom:2px;
+padding-bottom:2px;
+}
+
+.event-page h5, .event-page h2, .event-page p {
+    border-bottom: 1px dashed red;
+    margin-bottom: 5px;
+    padding-bottom:5px;
+}
+
+.event-page {
+    display: flex;
+    gap: 20px;
+}
+
+.event-image,
+.event-info {
+    flex: 1;
+}
+
+.event-image {
+text-align: center;
+}
+@media (max-width: 768px) {
+    .event-page {
+        flex-direction: column;
+    }
+}
+
+
 
 #zines img {
     max-width: 100%;

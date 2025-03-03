@@ -14,20 +14,25 @@
 	<meta name="theme-color" content="#000000">
 	<link rel="manifest" href="/manifest.json">
 	<title>Communal Leisure</title>
-	<meta name="description" content="DIY events in Glasgow and Edinburgh">
+    <meta name="description" content="Glasgow/Edinburgh DIY Event Listings">
 	<link href="/all.css" rel="stylesheet">
 
 </head>
 
 <body>
+    <header>
+        <a href="/"><img src="/img/rabbit.png" alt="Communal Leisure rabbit illustration" /></a>
+
+        <h1>Communal Leisure</h1>
+        <p>Glasgow/Edinburgh DIY Event Listings</p>
+    </header>
+
 
 @RenderBody()
 
 <hr/>
 <footer>
-        <a href="/"><img src="/img/rabbit.png" alt="Communal Leisure rabbit illustration" /></a>
-
-        <h1>Communal Leisure</h1>
+  
 
 
         <p>
@@ -69,17 +74,17 @@
         </div>
 
         <p><a href="/zines/index.html">Communal Leisure zine archive</a></p>
-
         <a href="https://github.com/pampthehorn/communal-leisure/" target="_blank"><img src="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png" style="width:50px" /></a>
-</footer>
+
+
 
     <footer>
         @Html.Partial("~/Views/Partials/Logout.cshtml")
     </footer>
 
 
-<script src="/script.js"></script>
-    <script src="/all.js"></script>
-    <script src="/calendar.js"></script>
+    <script src="/script.js"></script>
+    <script type="module" src="/all.js"></script>
+    <script type="module" src="/calendar.js"></script>
 
 </body>
