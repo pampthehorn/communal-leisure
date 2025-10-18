@@ -1,0 +1,61 @@
+﻿@using Umbraco.Cms.Core.Security
+@using Umbraco.Cms.Core.Services
+@using Umbraco.Cms.Web.Common.PublishedModels;
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.Venue>
+@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
+@using website
+@inject IPublishedValueFallback _publishedValueFallback;
+
+@{
+    Layout = "_Layout.cshtml";
+
+
+    var eventsRoot = Umbraco.Content(1059);
+
+    var venueEvents = Enumerable.Empty<ContentModels.Event>();
+
+    if (eventsRoot != null)
+    {
+
+        venueEvents = eventsRoot.Children<ContentModels.Event>()
+                            .Where(e => e.Venues != null && e.Venues.Any(v => v.Id == Model.Id))
+                            .OrderByDescending(e => e.StartDate);
+    }
+
+    var dateFormat = "ddd d MMM HH:mm";
+}
+
+<a href="@Model.Parent.Url()"> < all Venues</a>
+
+<h2>@Model.Name</h2>
+<p>@Model.Value("address")</p>
+<p>@Model.Postcode, @Model.City</p>
+@if (!Model.Website.IsNullOrWhiteSpace())
+{
+<a href="@Model.Website">@Model.Website</a>    
+}
+
+@Model.Info
+
+<h3>Events at @Model.Name</h3>
+
+<div class="event-page">
+    @if (venueEvents.Any())
+    {
+        <ul>
+            @foreach (var e in venueEvents)
+            {
+                var startDate = e.StartDate.ToUniversalTime();
+                var endDate = e.EndDate.ToUniversalTime();
+                string displayDate = $"{startDate.ToString(dateFormat)} - {(startDate.Date != endDate.Date ? endDate.ToString(dateFormat) : endDate.ToString("HH:mm"))} {endDate.Year}";
+
+                <li><a href="@e.Url()">@displayDate</a> @e.Acts | @e.Description</li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>No events found for this venue.</p>
+    }
+
+</div>
