@@ -41,10 +41,10 @@ public class TicketSystemComponent : IComponent
             return;
         }
 
-        var migrationPlan = new MigrationPlan("TicketSystemSchema2");
+        var migrationPlan = new MigrationPlan("TicketSystemSchema3");
 
         migrationPlan.From(string.Empty)
-            .To<AddTicketSystemSchema>("add-ticket-system-schema-initial2");
+            .To<AddTicketSystemSchema>("add-ticket-system-schema-initial3");
 
         var upgrader = new Upgrader(migrationPlan);
         upgrader.Execute(_migrationPlanExecutor, _coreScopeProvider, _keyValueService);

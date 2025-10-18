@@ -114,7 +114,7 @@ public class EventsController : RenderController
        
             var events = new List<EventItem>();
             var parentNode = _umbracoHelper.Content(1059);
-            var children = parentNode.Children().Select(m => new Event(m, _ipvfb)).Where(m => m.EndDate >= DateTime.Today);
+            var children = parentNode.Children().Select(m => new Event(m, _ipvfb)).Where(m => m.EndDate >= DateTime.Today && !m.Hide);
 
             var ukTimeZone = TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
 

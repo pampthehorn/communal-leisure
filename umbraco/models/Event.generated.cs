@@ -89,6 +89,13 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 		public virtual global::System.DateTime EndDate => this.Value<global::System.DateTime>(_publishedValueFallback, "endDate");
 
 		///<summary>
+		/// Hide: Hide from listing page. If published the event page will still exist
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "13.1.0+802e5a8")]
+		[ImplementPropertyType("hide")]
+		public virtual bool Hide => this.Value<bool>(_publishedValueFallback, "hide");
+
+		///<summary>
 		/// Link
 		///</summary>
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "13.1.0+802e5a8")]

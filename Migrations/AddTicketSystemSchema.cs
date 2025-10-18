@@ -1,5 +1,6 @@
 using System.Data;
 using Umbraco.Cms.Infrastructure.Migrations;
+using website.Models.Database;
 
 namespace website.Migrations;
 

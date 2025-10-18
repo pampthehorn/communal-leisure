@@ -1,84 +1,25 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using NPoco;
 using Stripe;
+using System.Globalization;
 using Umbraco.Cms.Core.Cache;
 using Umbraco.Cms.Core.Logging;
+using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Routing;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Web;
-using Umbraco.Cms.Infrastructure.Persistence.DatabaseAnnotations;
 using Umbraco.Cms.Infrastructure.Persistence;
-using Umbraco.Cms.Web.Website.Controllers;
+using Umbraco.Cms.Infrastructure.Persistence.DatabaseAnnotations;
 using Umbraco.Cms.Web.Common;
-using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Web.Common.PublishedModels;
+using Umbraco.Cms.Web.Website.Controllers;
+using Umbraco.Extensions;
+using website.Models.Database;
+using website.Models.ViewModels;
+using website.Services;
 using Event = Umbraco.Cms.Web.Common.PublishedModels.Event;
-using Newtonsoft.Json;
 namespace website;
-
-
-[TableName("Ticket")]
-[PrimaryKey("Id", AutoIncrement = true)]
-public class TicketModel
-    {
-
-        [PrimaryKeyColumn(AutoIncrement = true)]
-        public int Id { get; set; }
-        public Guid EventNodeId { get; set; }
-        public Guid TicketId { get; set; }
-        public int Quantity { get; set; }
-        public string Type { get; set; }
-        public string EventName { get; set; }
-        public int Cost { get; set; }
-        public int OrderId { get; set; }
-    }
-
-
-[TableName("Orders")]
-[PrimaryKey("Id", AutoIncrement = true)]
-public class OrderModel
-{
-    [PrimaryKeyColumn(AutoIncrement = true)]
-    public int Id { get; set; }
-
-    public long TotalAmount { get; set; }
-
-    public string CustomerName { get; set; }
-
-    public string CustomerEmail { get; set; }
-
-    public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
-
-    public string Status { get; set; } = string.Empty;
-
-    public string StripeSessionId { get; set; } = string.Empty;
-
-    public string StripeCustomerId { get; set; } = string.Empty; // Add this line
-}
-
-
-public class TicketSelectionViewModel
-{
-    public Guid EventNodeId { get; set; }
-    public List<TicketInput> Tickets { get; set; }
-    public string CustomerName { get; set; }
-    public string CustomerEmail { get; set; }
-}
-
-public class OrderVm
-{
-    public OrderModel? Order { get; set; }
-    public IEnumerable<TicketModel> Tickets { get; set; } = new List<TicketModel>();
-    public string CustomerName { get; set; }
-    public string CustomerEmail { get; set; }
-}
-public class TicketInput
-{
-    public Guid TicketId { get; set; }
-    public int Quantity { get; set; }
-}
-
-
 
 public class CheckoutController : SurfaceController
 {
@@ -87,6 +28,8 @@ public class CheckoutController : SurfaceController
     private readonly IConfiguration _configuration;
     private readonly UmbracoHelper _umbracoHelper;
     private readonly IPublishedValueFallback _publishedValueFallback;
+    private readonly IOrderProcessingService _orderProcessingService;
+    private readonly IEmailService _emailService;
 
     public CheckoutController(
         IUmbracoContextAccessor umbracoContextAccessor,
@@ -98,6 +41,8 @@ public class CheckoutController : SurfaceController
         ILogger<CheckoutController> logger,
         IConfiguration configuration,
         UmbracoHelper umbracoHelper,
+        IEmailService emailService,
+        IOrderProcessingService orderProcessingService,
         IPublishedValueFallback publishedValueFallback)
         : base(umbracoContextAccessor, databaseFactory, services, appCaches, profilingLogger, publishedUrlProvider)
     {
@@ -106,6 +51,8 @@ public class CheckoutController : SurfaceController
         _configuration = configuration;
         _umbracoHelper = umbracoHelper;
         _publishedValueFallback = publishedValueFallback;
+        _emailService = emailService;
+        _orderProcessingService = orderProcessingService;
     }
 
     [HttpPost]
@@ -209,12 +156,6 @@ public class CheckoutController : SurfaceController
 
         StripeConfiguration.ApiKey = _configuration["Stripe:SecretKey"];
 
-        //var customerService = new CustomerService();
-        //var customer = await customerService.CreateAsync(new CustomerCreateOptions
-        //{
-        //    Name = storedOrderData.CustomerName,
-        //    Email = storedOrderData.CustomerEmail,
-        //});
 
         try
         {
@@ -228,9 +169,10 @@ public class CheckoutController : SurfaceController
                 Currency = "gbp",
                 //  Customer = customer.Id, 
                 Description = description,
-                AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions { Enabled = true },
+              //  AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions { Enabled = true },
+                // PaymentMethodTypes = 
                 ReceiptEmail = storedOrderData.CustomerEmail,
-                
+                PaymentMethodTypes = new List<string> { "card" },
                 //Shipping = new ChargeShippingOptions
                 //{
                 //    Name = storedOrderData.CustomerName
@@ -270,36 +212,19 @@ public class CheckoutController : SurfaceController
         [FromQuery(Name = "payment_intent")] string paymentIntentId,
         [FromQuery(Name = "payment_intent_client_secret")] string clientSecret)
     {
-        using var db = _databaseFactory.CreateDatabase();
-        var order = await db.SingleOrDefaultAsync<OrderModel>("WHERE StripeSessionId = @0", paymentIntentId);
+        var result = await _orderProcessingService.FinalizeOrderAsync(paymentIntentId);
 
-        if (order == null)
+        if (!result.Success)
         {
-            _logger.LogWarning("OrderComplete was called with an invalid payment_intent_id: {PaymentIntentId}", paymentIntentId);
+            _logger.LogWarning("OrderComplete was called with an invalid or failed payment_intent_id: {PaymentIntentId}", paymentIntentId);
             return RedirectToUmbracoPage(_umbracoHelper.ContentAtRoot().First());
         }
 
-        StripeConfiguration.ApiKey = _configuration["Stripe:SecretKey"];
-        var service = new PaymentIntentService();
-        var paymentIntent = await service.GetAsync(paymentIntentId);
 
-        if (paymentIntent.Status == "succeeded" && order.Status != "Completed")
-        {
-            order.Status = "Completed";
-            order.CustomerName = paymentIntent.Shipping?.Name ?? "N/A";
-            order.CustomerEmail = paymentIntent.ReceiptEmail ?? "N/A";
-            await db.UpdateAsync(order);
-        }
+        var viewModel = new OrderVm { Order = result.Order, Tickets = result.Tickets };
 
-        var tickets = await db.FetchAsync<TicketModel>("WHERE OrderId = @0", order.Id);
-        var viewModel = new OrderVm { Order = order, Tickets = tickets };
-
-  
         return View("YourOrder", viewModel);
     }
-
-
-
 
 
 }

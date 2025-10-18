@@ -1,3 +1,5 @@
+using website.Services;
+
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 
@@ -11,6 +13,9 @@ builder.Services.AddCors(options =>
     });
 
 });
+
+builder.Services.AddSingleton<IEmailService, EmailService>();
+builder.Services.AddScoped<IOrderProcessingService, OrderProcessingService>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {

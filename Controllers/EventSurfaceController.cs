@@ -27,6 +27,7 @@
     using Newtonsoft.Json;
 
     using Udi = Umbraco.Cms.Core.Udi;
+    using website.Services;
 
     public class EventSurfaceController : SurfaceController
         {
@@ -41,6 +42,7 @@
         private readonly IConfiguration _configuration;
         private readonly UmbracoHelper _umbracoHelper;
         private readonly IPublishedValueFallback _ipvfb;
+        private readonly IEmailService _emailService;
 
 
 
@@ -52,6 +54,7 @@
         IPublishedUrlProvider publishedUrlProvider,
         IMemberManager memberManager,
         IConfiguration configuration,
+        IEmailService emailService,
         UmbracoHelper umbracoHelper,
         IPublishedValueFallback ipvfb)
         : base(umbracoContextAccessor, databaseFactory, services, appCaches, profilingLogger, publishedUrlProvider)
@@ -66,6 +69,7 @@
             _configuration = configuration;
             _umbracoHelper = umbracoHelper;
             _ipvfb = ipvfb;
+            _emailService = emailService;
         }
 
             [HttpPost]
@@ -134,39 +138,13 @@
                     _contentService.Unpublish(eventNode);
                 }
 
-                MailMessage mailMessage = new MailMessage();
+                string subject = $"New Event Submitted: {acts} on {startDate.ToShortDateString()}";
+                string body = $"A new event has been submitted.<br/><br/><b>Acts:</b> {acts}<br/><b>Date:</b> {startDate}{editLinkText}";
+                string toAddress = "comlesweb@gmail.com"; 
 
-                    if(eventsNode.NotifyEmails!=null)
-                    foreach(var address in eventsNode.NotifyEmails)
-                    {
-                        var ma = new MailAddress(address, address);
+                await _emailService.SendEmailAsync(toAddress, subject, body, eventsNode.NotifyEmails);
 
-                        mailMessage.Bcc.Add(ma);
-                    }
-                    var toMailAddress = new MailAddress("comlesweb@gmail.com", $"comlesweb");
-                    mailMessage.To.Add(toMailAddress);
 
-                    string host = _configuration.GetValue<string>("Umbraco:CMS:Global:Smtp:Host");
-                    int port = _configuration.GetValue<int>("Umbraco:CMS:Global:Smtp:Port");
-                    string fromAddress = _configuration.GetValue<string>("Umbraco:CMS:Global:Smtp:From");
-                    string userName = _configuration.GetValue<string>("Umbraco:CMS:Global:Smtp:Username");
-                    string password = _configuration.GetValue<string>("Umbraco:CMS:Global:Smtp:Password");
-
-                    mailMessage.Body = acts + " " + startDate + editLinkText;
-                    mailMessage.From = new MailAddress(fromAddress);
-                    mailMessage.IsBodyHtml = true;
-                    mailMessage.Subject = "new event: " + acts + " " + startDate;
-
-                    using (SmtpClient smtp = new SmtpClient())
-                    {
-                        smtp.Host = host;
-                        NetworkCredential NetworkCred = new NetworkCredential(userName, password);
-                        smtp.UseDefaultCredentials = false;
-                        smtp.Credentials = NetworkCred;
-                        smtp.Port = port;
-                        smtp.Send(mailMessage);
-                    }
-                
                 TempData["SuccessMessage"] = eventNode.Name + " submitted successfully.";
                 return RedirectToCurrentUmbracoPage();
                 }

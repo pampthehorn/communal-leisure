@@ -20,6 +20,7 @@
     if (isLoggedIn)
     {
         var currentUser = await _memberManager.GetCurrentMemberAsync();
+        bool isSuperuser = (await _memberManager.GetRolesAsync(currentUser)).Contains("superuser");
         isMyEvent = Model.Organizer != null && _memberManager.FindByIdAsync(Model.Organizer.Id.ToString()).Result.Email == currentUser.Email;
 
     }
@@ -28,45 +29,41 @@
         isMyEvent = true;
     }
 
+
     var startDate = Model.StartDate.ToUniversalTime();
     var endDate = Model.EndDate.ToUniversalTime();
     string displayDate = $"{startDate:R} - {(startDate.Date != endDate.Date ? endDate.ToString("R") : endDate.ToString("HH:mm"))}";
 
 }
-
+<h2>@Model.Name</h2>
 <div class="event-page">
 
     <div class="event-info">
                         <p>
                             <time>@displayDate</time>
                         </p>
-<h2>@Model.Name</h2>
+
 <p>@Model.Description</p>
 <p>@Model.Venue</p>
                         <a href="@Model.Link" target="_blank">@Model.Link</a>
                         </div>
-    <div class="event-image">
-        <img src="@($"{Model.Poster.Url()}?width=400&quality=80")" alt="@Model.Name" />
-       <br/> <a href="@Model.Poster.Url()" download>View full size</a>
-    </div>
+
 
     @if (Model.Tickets != null && Model.Tickets.Any())
     {
-        <h2>Tickets 🎟️</h2>
-        <hr />
+
 
         @using (Html.BeginUmbracoForm<CheckoutController>(nameof(CheckoutController.SubmitTicketSelection), FormMethod.Post))
         {
             var ticketsList = Model.Tickets.ToList();
-
+            <h2>Tickets 🎟️</h2>
             @for (int i = 0; i < ticketsList.Count; i++)
             {
                 var ticketContent = ticketsList[i].Content;
                 var ticket = new Ticket(ticketContent, _publishedValueFallback);
 
                 <div class="mb-3">
-                    <h4>@ticket.Type</h4>
-                    <p class="lead">£@ticket.Cost.ToString("F2")</p>
+                    <h4>£@ticket.Cost.ToString("F2") - @ticket.Type</h4>
 
                     <input type="hidden" name="Tickets[@i].TicketId" value="@ticketContent.Key" />
 
@@ -75,21 +72,32 @@
                 </div>
             }
 
+            <br />
+    
+            <hr />
             <div class="mb-3" style="max-width: 400px;">
                 <label for="CustomerName" class="form-label">Full Name</label>
                 <input type="text" id="CustomerName" name="CustomerName" class="form-control" required />
             </div>
-
+            <br />
             <div class="mb-3" style="max-width: 400px;">
                 <label for="CustomerEmail" class="form-label">Email Address</label>
                 <input type="email" id="CustomerEmail" name="CustomerEmail" class="form-control" required />
             </div>
 
             <input type="hidden" name="EventNodeId" value="@Model.Key" />
-
+            <br />
             <button type="submit" class="btn btn-primary btn-lg mt-3">Buy Tickets</button>
         }
     }
+
+
+    <div class="event-image">
+        <img src="@($"{Model.Poster.Url()}?width=400&quality=80")" alt="@Model.Name" />
+       <br/> <a href="@Model.Poster.Url()" download>View full size</a>
+    </div>
+
+
 
 </div>
 
@@ -98,5 +106,7 @@
 {
 
     @Html.Partial("~/Views/Partials/EditEventForm.cshtml", new Event(Model, _ipvfb))
+
+    @await Component.InvokeAsync("EventOrders", new { eventNodeId = Model.Key })
 
 }

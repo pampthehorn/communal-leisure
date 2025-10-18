@@ -2,6 +2,7 @@
 @using Newtonsoft.Json
 @using Umbraco.Cms.Web.Common
 @using website
+@using website.Models.ViewModels
 @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
 @inject UmbracoHelper _umbracoHelper
 @functions {
@@ -73,9 +74,7 @@
 
                             <div class="d-grid gap-2 mt-4">
                                 <button id="submit" class="btn btn-success btn-lg">
-                                    <div class="spinner-border spinner-border-sm d-none" role="status">
-                                        <span class="visually-hidden">Loading...</span>
-                                    </div>
+                                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                                     <span id="button-text">Pay Now</span>
                                 </button>
                             </div>
@@ -117,10 +116,16 @@
             
             stripe = Stripe(publishableKey);
             
-            const appearance = { theme: 'stripe' };
+            const appearance = { theme: 'none' };
             elements = stripe.elements({ appearance, clientSecret });
 
-            const paymentElement = elements.create("payment");
+                const paymentElement = elements.create("payment",{
+        // Specify the payment methods you want to show
+        // 'card' is for standard credit/debit card fields
+        // 'link' includes Apple Pay, Google Pay, and other Link wallet options
+        // Stripe will automatically detect and show Apple Pay/Google Pay if supported by the user's device/browser
+        paymentMethodTypes: ['card']
+    });
             paymentElement.mount("#payment-element");
 
             paymentForm.addEventListener('submit', async (e) => {
