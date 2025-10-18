@@ -20,8 +20,9 @@
     if (isLoggedIn)
     {
         var currentUser = await _memberManager.GetCurrentMemberAsync();
-        bool isSuperuser = (await _memberManager.GetRolesAsync(currentUser)).Contains("superuser");
-        isMyEvent = Model.Organizer != null && _memberManager.FindByIdAsync(Model.Organizer.Id.ToString()).Result.Email == currentUser.Email;
+        var roles = await _memberManager.GetRolesAsync(currentUser);
+        bool isSuperuser = roles.Contains("superuser");
+        isMyEvent = isSuperuser || Model.Organizer != null && _memberManager.FindByIdAsync(Model.Organizer.Id.ToString()).Result.Email == currentUser.Email;
 
     }
     else if (!Model.EditKey.IsNullOrWhiteSpace() && editKey == Model.EditKey)
