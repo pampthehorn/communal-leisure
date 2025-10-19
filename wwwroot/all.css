@@ -100,7 +100,7 @@ text-align: center;
         flex-direction: column;
     }
 
-    .text-view .poster-container {
+    .list-view .poster-container {
         display: none;
     }
 
@@ -167,7 +167,7 @@ a {
         border-color: #333;
     }
 
-ul.listing.text-view {
+ul.listing.list-view {
     display: block;
     grid-template-columns: none;
     gap: 0;
@@ -239,4 +239,10 @@ li.event-text-item {
 
 .poster-container:hover .poster-popover {
     display: block;
+}
+
+#loadMoreBtn {
+cursor:pointer;
+border:1px solid black;
+padding: 10px;
 }

@@ -2,8 +2,8 @@
 @using Umbraco.Cms.Core.Services
 @using Umbraco.Cms.Web.Common.PublishedModels
 @using Microsoft.Extensions.Configuration
-@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
-@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<EventsViewModel> 
+@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<EventsViewModel>
 @inject IPublishedValueFallback _ipvfb;
 @model EventsViewModel
 @inject IConfiguration _config;
@@ -41,22 +41,23 @@
 
         <div class="view-toggle">
             <button id="view-grid" class="view-btn @(Model.ViewMode == "grid" ? "active" : "")" data-view="grid">Grid</button>
-            <button id="view-text" class="view-btn @(Model.ViewMode == "text" ? "active" : "")" data-view="text">Text</button>
+            <button id="view-text" class="view-btn @(Model.ViewMode == "list" ? "active" : "")" data-view="text">List</button>
+                    <a href="/add-event">Add Event</a>
+
         </div>
 
-        <a href="/add-event">Add Event</a>
     </nav>
     
-    <ul class="listing @(Model.ViewMode == "text" ? "text-view" : "grid-view")" id="events">
+    <ul class="listing @(Model.ViewMode == "list" ? "list-view" : "grid-view")" id="events">
         @if (Model.Events != null && Model.Events.Count > 0)
         {
-            if (Model.ViewMode == "text")
+            if (Model.ViewMode == "list")
             {
-                @await Html.PartialAsync("_EventListText", Model.Events)
+                @await Html.PartialAsync("_EventList", Model.Events)
             }
             else
             {
-                @await Html.PartialAsync("_EventList", Model.Events)
+                @await Html.PartialAsync("_EventGrid", Model.Events)
             }
         }
         else
@@ -108,7 +109,7 @@
                 viewGridBtn.addEventListener('click', () => switchView('grid'));
             }
             if (viewTextBtn) {
-                viewTextBtn.addEventListener('click', () => switchView('text'));
+                viewTextBtn.addEventListener('click', () => switchView('list'));
             }
 
             if (loadMoreBtn) {

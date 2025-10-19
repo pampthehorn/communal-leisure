@@ -50,7 +50,7 @@ public class EventsController : RenderController
         if (pageNumber > 1)
         {
             
-            return PartialView("_EventList", model.Events);
+            return PartialView("_EventGrid", model.Events);
         }
 
         return CurrentTemplate(model);
@@ -115,7 +115,7 @@ public class EventsController : RenderController
 
         model.TotalEvents = events.Count;
 
-        if (viewMode == "text")
+        if (viewMode == "list")
         {
             model.Events = events;
         }
