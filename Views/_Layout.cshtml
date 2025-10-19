@@ -18,7 +18,7 @@
 	<link rel="manifest" href="/manifest.json">
 	<title>Communal Leisure</title>
     <meta name="description" content="Glasgow/Edinburgh DIY Event Listings">
-	<link href="/all.css" rel="stylesheet">
+	<link href="/all.css?v=1" rel="stylesheet">
 
     <meta property="og:title" content="Communal Leisure">
     <meta property="og:description" content="Glasgow/Edinburgh DIY Event Listings">
@@ -26,7 +26,6 @@
     <meta property="og:url" content="https://communalleisure.com">
     <meta property="og:type" content="website">
 
-    <!-- Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Communal Leisure">
     <meta name="twitter:description" content="Glasgow/Edinburgh DIY Event Listings">
@@ -45,11 +44,12 @@
 
 @RenderBody()
 
-<hr/>
+
 <footer>
 
         @if (Umbraco.AssignedContentItem.IsDocumentType("events"))
         {
+            <hr/>
             <div>
                 <p>
             Communal Leisure is a space for discussion and sharing of music, art and politics, based in Glasgow. This Events Wall

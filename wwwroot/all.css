@@ -99,6 +99,11 @@ text-align: center;
     .event-page {
         flex-direction: column;
     }
+
+    .text-view .poster-container {
+        display: none;
+    }
+
 }
 
 
@@ -129,7 +134,9 @@ code {
 
 a {
     color: black;
-    word-wrap: break-word;
+    word-wrap: break-word; 
+    overflow-wrap: break-word; 
+    word-break: break-word;
 }
 
 
@@ -177,7 +184,8 @@ li.event-text-item {
 }
 
     li.event-text-item .event-details {
-        flex: 1; 
+        flex: 1;
+        min-width: 0;
     }
 
     li.event-text-item h2 {

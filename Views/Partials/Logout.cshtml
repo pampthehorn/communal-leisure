@@ -8,7 +8,6 @@
 @{
     var isLoggedIn = Context.User?.Identity?.IsAuthenticated ?? false;
     var logoutModel = new PostRedirectModel();
-    // You can modify this to redirect to a different URL instead of the current one
     logoutModel.RedirectUrl = null;
 }
 
@@ -27,6 +26,19 @@
     </div>
 }
 else
-{    
+{   
     @await Umbraco.RenderMacroAsync("Login")
+    
+    <hr/>
+    
+  
+        var forgotPasswordPage = Umbraco.ContentAtRoot()?
+                                     
+                                     .FirstOrDefault(x => x.ContentType.Alias == "forgotPasswordPage");
+    
+    
+    @if (forgotPasswordPage != null)
+    {
+        <p><a href="@forgotPasswordPage.Url()">Forgot Password?</a></p>
+    }
 }
