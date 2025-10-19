@@ -1,0 +1,30 @@
+﻿@using website.Models
+@model List<EventItem>
+
+@{
+    var dateFormat = "ddd d MMM HH:mm";
+}
+
+@if (Model != null && Model.Count > 0)
+{
+    foreach (var e in Model)
+    {
+        var startDate = e.startDate.ToUniversalTime();
+        var endDate = e.endDate.ToUniversalTime();
+        string displayDate = $"{startDate.ToString(dateFormat)} - {(startDate.Date != endDate.Date ? endDate.ToString(dateFormat) : endDate.ToString("HH:mm"))}";
+
+        <li class="event">
+            <a href="@e.url">
+                <img src="@($"{e.poster.Url}?width=400&quality=80")" alt="@e.name" />
+            </a>
+            <h5>
+                <span title="add to calendar">📅</span>
+                <time>@displayDate</time>
+            </h5>
+            <h2>@e.name</h2>
+            <p>@e.description</p>
+            <p>@e.venue</p>
+            <a href="@e.link" target="_blank">@e.link</a>
+        </li>
+    }
+}

@@ -141,3 +141,94 @@ a {
     background: lightgreen;
     padding: 5px;
 }
+
+
+.view-toggle {
+    margin: 10px 0;
+}
+
+.view-btn {
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    background: #f9f9f9;
+    cursor: pointer;
+}
+
+    .view-btn.active {
+        background: #333;
+        color: #fff;
+        border-color: #333;
+    }
+
+ul.listing.text-view {
+    display: block;
+    grid-template-columns: none;
+    gap: 0;
+}
+
+li.event-text-item {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+    width: 100%;
+}
+
+    li.event-text-item .event-details {
+        flex: 1; 
+    }
+
+    li.event-text-item h2 {
+        font-size: 1.2rem; 
+        margin: 5px 0;
+    }
+
+    li.event-text-item h5 {
+        font-size: 0.9rem;
+        color: #555;
+        margin: 0;
+    }
+
+    li.event-text-item p {
+        font-size: 0.9rem;
+        margin: 5px 0;
+       
+    }
+
+
+.poster-container {
+    position: relative; 
+    flex-shrink: 0;
+}
+
+.poster-thumb {
+    width: 100px;
+    height: 100px;
+    object-fit: cover; 
+    display: block;
+    border: 1px solid #eee;
+}
+
+.poster-popover {
+    display: none; 
+    position: absolute;
+    top: 0;
+    left: 110px; 
+    width: 400px;
+    z-index: 10;
+    background: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 5px;
+}
+
+    .poster-popover img {
+        width: 100%;
+        display: block;
+    }
+
+.poster-container:hover .poster-popover {
+    display: block;
+}
