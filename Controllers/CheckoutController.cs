@@ -19,6 +19,8 @@ using website.Models.Database;
 using website.Models.ViewModels;
 using website.Services;
 using Event = Umbraco.Cms.Web.Common.PublishedModels.Event;
+using Member = Umbraco.Cms.Web.Common.PublishedModels.Member;
+
 namespace website;
 
 public class CheckoutController : SurfaceController
@@ -59,6 +61,7 @@ public class CheckoutController : SurfaceController
     [ValidateAntiForgeryToken]
     public IActionResult SubmitTicketSelection(TicketSelectionViewModel model)
     {
+        // ... (No changes to this method) ...
         var selectedTickets = model.Tickets.Where(t => t.Quantity > 0).ToList();
 
         if (!selectedTickets.Any())
@@ -76,7 +79,7 @@ public class CheckoutController : SurfaceController
         foreach (var selectedTicket in selectedTickets)
         {
             var ticketContent = eventNode.Tickets.FirstOrDefault(t => t.Content.Key == selectedTicket.TicketId)?.Content;
-            if (ticketContent == null) continue; 
+            if (ticketContent == null) continue;
 
             var ticket = new Ticket(ticketContent, _publishedValueFallback);
 
@@ -85,7 +88,7 @@ public class CheckoutController : SurfaceController
                 EventNodeId = model.EventNodeId,
                 TicketId = selectedTicket.TicketId,
                 Quantity = selectedTicket.Quantity,
-                EventName = eventNode.Name,
+                EventName = $"{eventNode.Name} - {eventNode.StartDate.ToString("yyyy-MM-dd")}",
                 Type = ticket.Type,
                 Cost = (int)(ticket.Cost * 100)
             });
@@ -109,8 +112,6 @@ public class CheckoutController : SurfaceController
         return RedirectToUmbracoPage(checkoutPage);
     }
 
-
-
     [HttpPost]
     public async Task<IActionResult> CreatePaymentIntent()
     {
@@ -125,6 +126,24 @@ public class CheckoutController : SurfaceController
         }
 
         TempData.Keep("OrderData");
+
+        string stripeSecretKey = null;
+        string stripePublishableKey = null;
+
+        var eventId = storedOrderData.Tickets.First().EventNodeId;
+        var eventPage = _umbracoHelper.Content(eventId) as Event;
+
+        if (eventPage?.Organizer is Member organizer)
+        {
+            if (!string.IsNullOrWhiteSpace(organizer.StripeSecretKey))
+            {
+                stripeSecretKey = organizer.StripeSecretKey;
+            }
+            if (!string.IsNullOrWhiteSpace(organizer.StripePublicKey))
+            {
+                stripePublishableKey = organizer.StripePublicKey;
+            }
+        }
 
         long totalAmountInCents = storedOrderData.Tickets.Sum(t => (long)t.Cost * t.Quantity);
 
@@ -154,12 +173,10 @@ public class CheckoutController : SurfaceController
             return StatusCode(500, new { error = "Could not create order." });
         }
 
-        StripeConfiguration.ApiKey = _configuration["Stripe:SecretKey"];
-
+        StripeConfiguration.ApiKey = stripeSecretKey;
 
         try
         {
-
             var description = string.Join(", ", storedOrderData.Tickets
                 .Select(t => $"{t.Quantity}x {t.Type} ticket for {t.EventName}"));
 
@@ -167,17 +184,9 @@ public class CheckoutController : SurfaceController
             {
                 Amount = totalAmountInCents,
                 Currency = "gbp",
-                //  Customer = customer.Id, 
                 Description = description,
-              //  AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions { Enabled = true },
-                // PaymentMethodTypes = 
                 ReceiptEmail = storedOrderData.CustomerEmail,
                 PaymentMethodTypes = new List<string> { "card" },
-                //Shipping = new ChargeShippingOptions
-                //{
-                //    Name = storedOrderData.CustomerName
-                //    //         Address = new AddressOptions { Country = "GB", PostalCode = "SW1A 0AA", City = "London", Line1 = "10 Downing Street" }
-                //},
                 Metadata = new Dictionary<string, string> { { "InternalOrderId", newOrder.Id.ToString() } }
             };
 
@@ -185,19 +194,16 @@ public class CheckoutController : SurfaceController
             PaymentIntent paymentIntent = await service.CreateAsync(options);
             newOrder.StripeSessionId = paymentIntent.Id;
 
-      
+            using (var db = _databaseFactory.CreateDatabase())
+            {
+                await db.UpdateAsync(newOrder);
+            }
 
-    //    newOrder.StripeCustomerId = customer.Id;
-        using (var db = _databaseFactory.CreateDatabase())
-        {
-            await db.UpdateAsync(newOrder);
-        }
-
-        return new JsonResult(new
-        {
-            clientSecret = paymentIntent.ClientSecret,
-            publishableKey = _configuration["Stripe:PublishableKey"]
-        });
+            return new JsonResult(new
+            {
+                clientSecret = paymentIntent.ClientSecret,
+                publishableKey = stripePublishableKey
+            });
         }
         catch (Exception e)
         {
@@ -205,7 +211,6 @@ public class CheckoutController : SurfaceController
         }
         return new JsonResult(null);
     }
-
 
     [HttpGet]
     public async Task<IActionResult> OrderComplete(
@@ -220,11 +225,8 @@ public class CheckoutController : SurfaceController
             return RedirectToUmbracoPage(_umbracoHelper.ContentAtRoot().First());
         }
 
-
         var viewModel = new OrderVm { Order = result.Order, Tickets = result.Tickets };
 
         return View("YourOrder", viewModel);
     }
-
-
 }

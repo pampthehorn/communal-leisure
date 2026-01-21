@@ -1,9 +1,14 @@
 ﻿using Stripe;
 using System.Globalization;
+using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Infrastructure.Persistence;
+using Umbraco.Cms.Web.Common; 
+using Umbraco.Cms.Web.Common.PublishedModels;
 using website.Helpers;
 using website.Models;
 using website.Models.Database;
+using Event = Umbraco.Cms.Web.Common.PublishedModels.Event;
+using Member = Umbraco.Cms.Web.Common.PublishedModels.Member;
 
 namespace website.Services
 {
@@ -18,17 +23,20 @@ namespace website.Services
         private readonly IConfiguration _configuration;
         private readonly IEmailService _emailService;
         private readonly ILogger<OrderProcessingService> _logger;
+        private readonly UmbracoHelper _umbracoHelper; 
 
         public OrderProcessingService(
             IUmbracoDatabaseFactory databaseFactory,
             IConfiguration configuration,
             IEmailService emailService,
-            ILogger<OrderProcessingService> logger)
+            ILogger<OrderProcessingService> logger,
+            UmbracoHelper umbracoHelper) 
         {
             _databaseFactory = databaseFactory;
             _configuration = configuration;
             _emailService = emailService;
             _logger = logger;
+            _umbracoHelper = umbracoHelper;
         }
 
         public async Task<OrderCompletionResult> FinalizeOrderAsync(string paymentIntentId)
@@ -55,7 +63,24 @@ namespace website.Services
                 };
             }
 
-            StripeConfiguration.ApiKey = _configuration["Stripe:SecretKey"];
+            string stripeSecretKey = null;
+
+            var firstTicket = tickets.FirstOrDefault();
+            if (firstTicket != null)
+            {
+                var eventPage = _umbracoHelper.Content(firstTicket.EventNodeId) as Event;
+
+                if (eventPage?.Organizer is Member organizer)
+                {
+                    if (!string.IsNullOrWhiteSpace(organizer.StripeSecretKey))
+                    {
+                        stripeSecretKey = organizer.StripeSecretKey;
+                    }
+                }
+            }
+
+            StripeConfiguration.ApiKey = stripeSecretKey;
+
             var service = new PaymentIntentService();
             var paymentIntent = await service.GetAsync(paymentIntentId);
 
@@ -74,7 +99,6 @@ namespace website.Services
                         var codes = new List<string>();
                         for (int i = 0; i < ticket.Quantity; i++)
                         {
-                            // Use the new static helper
                             codes.Add(TicketCodeGenerator.GenerateUniqueTicketCode());
                         }
                         ticket.TicketCodes = string.Join(",", codes);
@@ -106,9 +130,7 @@ namespace website.Services
                 };
             }
 
-            // Payment not successful
             return new OrderCompletionResult { Success = false, Order = order, Tickets = tickets };
         }
     }
-
 }

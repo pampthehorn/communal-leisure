@@ -19,6 +19,11 @@ h1 {
 
 header {
     text-align: center;
+
+}
+
+main {
+    background:white;
 }
 
 footer {
@@ -26,7 +31,18 @@ footer {
 }
 
 nav {
-text-align:center;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10; /* Higher z-index */
+    /* Optional styling */
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+form#filters {
+    margin:0px;
 }
 
 h5 span:hover {
@@ -104,6 +120,18 @@ text-align: center;
         display: none;
     }
 
+    li.event-text-item h2 {
+        font-size:inherit;
+    }
+
+    li.event-text-item h5 {
+        font-size: inherit;
+    }
+
+    li.event-text-item p {
+        font-size: inherit;
+    }
+
 }
 
 
@@ -165,6 +193,7 @@ a {
         background: #333;
         color: #fff;
         border-color: #333;
+        cursor:default;
     }
 
 ul.listing.list-view {

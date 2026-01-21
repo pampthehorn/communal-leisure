@@ -16,7 +16,16 @@
 
 <div>
     <nav>
-        <form method="get" id="filters">
+  
+
+        <div class="view-toggle">
+            <button id="view-grid" class="view-btn @(Model.ViewMode == "grid" ? "active" : "")" data-view="grid">Grid</button>
+            <button id="view-text" class="view-btn @(Model.ViewMode == "list" ? "active" : "")" data-view="text">List</button>
+                    <a href="/add-event">Add Event</a>
+
+        </div>
+
+              <form method="get" id="filters">
             Filters: 
             <select id="SelectedTag" name="SelectedTag">
                 <!option value="everything" @(Model.SelectedTag == "everything" ? "selected" : "")>Everything</!option>
@@ -38,13 +47,6 @@
             
             <input type="hidden" id="ViewMode" name="ViewMode" value="@Model.ViewMode" />
         </form>
-
-        <div class="view-toggle">
-            <button id="view-grid" class="view-btn @(Model.ViewMode == "grid" ? "active" : "")" data-view="grid">Grid</button>
-            <button id="view-text" class="view-btn @(Model.ViewMode == "list" ? "active" : "")" data-view="text">List</button>
-                    <a href="/add-event">Add Event</a>
-
-        </div>
 
     </nav>
     
