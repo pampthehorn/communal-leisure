@@ -28,7 +28,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var orderVm in Model.CompletedOrders)
+                @foreach (var orderVm in Model.CompletedOrders.OrderBy(m=>m.Order.CreatedDate))
                 {
                     <tr>
                         <td style="padding: 12px; vertical-align: top;">@orderVm.Order.Id</td>

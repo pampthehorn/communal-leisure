@@ -40,17 +40,17 @@
 <div class="event-page">
 
     <div class="event-info">
-                        <p>
-                            <time>@displayDate</time>
-                        </p>
+        <p>
+            <time>@displayDate</time>
+        </p>
 
-<p>@Model.Description</p>
-<p>@Model.Venue</p>
-                        <a href="@Model.Link" target="_blank">@Model.Link</a>
-                        </div>
+        <p>@Model.Description</p>
+        <p>@Model.Venue</p>
+        <a href="@Model.Link" target="_blank">@Model.Link</a>
+    </div>
 
 
-    @if (Model.Tickets != null && Model.Tickets.Any())
+    @if (Model.Tickets != null && Model.Tickets.Any() && Model.Value<bool>("ticketsOnline"))
     {
 
 
@@ -69,12 +69,12 @@
                     <input type="hidden" name="Tickets[@i].TicketId" value="@ticketContent.Key" />
 
                     <label for="ticket_quantity_@i" class="form-label">Quantity:</label>
-                    <input type="number" id="ticket_quantity_@i" name="Tickets[@i].Quantity" value="@(i==0?1:0)" min="0" max="20" step="1" class="form-control" style="max-width: 120px;">
+                    <input type="number" id="ticket_quantity_@i" name="Tickets[@i].Quantity" value="@(i == 0 ? 1 : 0)" min="0" max="20" step="1" class="form-control" style="max-width: 120px;">
                 </div>
             }
 
             <br />
-    
+
             <hr />
             <div class="mb-3" style="max-width: 400px;">
                 <label for="CustomerName" class="form-label">Full Name</label>
@@ -95,7 +95,7 @@
 
     <div class="event-image">
         <img src="@($"{Model.Poster.Url()}?width=400&quality=80")" alt="@Model.Name" />
-       <br/> <a href="@Model.Poster.Url()" download>View full size</a>
+        <br /> <a href="@Model.Poster.Url()" download>View full size</a>
     </div>
 
 

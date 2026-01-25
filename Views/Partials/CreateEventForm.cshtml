@@ -18,6 +18,8 @@
 
         <div>
             <label asp-for="Poster">Event Poster:</label>
+            <img id="posterPreview" src="#" alt="Poster Preview"
+                 style="display:none; max-width: 200px; max-height: 300px; margin-bottom: 10px; border: 1px solid #ccc;" />
             <input asp-for="Poster" type="file" accept="image/*" />
             <span asp-validation-for="Poster" class="text-danger"></span>
         </div>
