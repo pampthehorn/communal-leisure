@@ -51,7 +51,6 @@
     GROUP BY O.Id, O.TotalAmount, O.CustomerName, O.CustomerEmail, O.CreatedDate, O.Status, O.StripeSessionId, O.StripeCustomerId
     ORDER BY O.CustomerName";
 
-                    // FIX 1: Wrap the string and the parameter in db.Sql()
                     var query = db.SqlContext.Sql(sqlString, eventNodeId);
 
                     var completedOrders = await db.FetchAsync<OrderModel>(query);

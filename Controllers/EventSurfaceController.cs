@@ -223,7 +223,7 @@
                 var venues = _umbracoHelper.Content(1059).Siblings().FirstOrDefault(m => m.IsDocumentType(Venues.ModelTypeAlias)).DescendantsOfType(Venue.ModelTypeAlias).Select(m => new Venue(m, _ipvfb));
                 var venueMatch = venues.FirstOrDefault(m => m.Name + ", " + m.City == venue);
         
-                var eventNode = _contentService.Create(startDate.ToString("yyyy-MM-dd") + " " + acts,1059, Event.ModelTypeAlias ,-1);
+                var eventNode = _contentService.CreateAndSave(startDate.ToString("yyyy-MM-dd") + " " + acts,1059, Event.ModelTypeAlias ,-1);
                     organizer = "";
                     var currentMember = await _memberManager.GetCurrentMemberAsync();
                     if (currentMember != null) {
@@ -269,17 +269,20 @@
                 string editKey = Guid.NewGuid().ToString();
                 eventNode.SetValue("editKey", editKey);
                 eventNode.SetValue("email", email);
-               
-                    _contentService.Publish(eventNode,["en-US"]);
-               
-                   
+
+                _contentService.Save(eventNode);
+
+                var result = _contentService.Publish(eventNode, ["*"]);
+
                   var eventsNode = new Events(_umbracoHelper.ContentAtRoot().FirstOrDefault(m => m.ContentType.Alias == "events"), _ipvfb);
-                    var editLink = _umbracoHelper.Content(eventNode.Id).Url(mode: UrlMode.Absolute) +"?key=" + editKey;
+                var publishedEventNode = _umbracoHelper.Content(result.Content.Key);
+
+                    var editLink = publishedEventNode.Url(mode: UrlMode.Absolute) +"?key=" + editKey;
 
                 var editLinkText = $"<br/><br/>Once published you will be able to edit with this link: {editLink}";
                 if (currentMember == null)
                 {
-                    _contentService.Unpublish(eventNode);
+                    _contentService.Unpublish(eventNode, "*");
                 }
 
                 string subject = $"New Event Submitted: {acts} on {startDate.ToShortDateString()}";
