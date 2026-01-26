@@ -270,7 +270,7 @@
                 eventNode.SetValue("editKey", editKey);
                 eventNode.SetValue("email", email);
                
-                    _contentService.SaveAndPublish(eventNode);
+                    _contentService.Publish(eventNode,["en-US"]);
                
                    
                   var eventsNode = new Events(_umbracoHelper.ContentAtRoot().FirstOrDefault(m => m.ContentType.Alias == "events"), _ipvfb);
@@ -363,7 +363,7 @@
                 eventNode.SetValue("status", JsonConvert.SerializeObject(new[] { status }));
 
 
-                _contentService.SaveAndPublish(eventNode);
+                _contentService.Publish(eventNode,["en-US"]);
 
                 TempData["SuccessMessage"] = eventNode.Name + " edited successfully.";
 
