@@ -365,7 +365,7 @@
                 eventNode.SetValue("tags", tagsToSave);
                 eventNode.SetValue("status", JsonConvert.SerializeObject(new[] { status }));
 
-
+                _contentService.Save(eventNode);
                 _contentService.Publish(eventNode,["en-US"]);
 
                 TempData["SuccessMessage"] = eventNode.Name + " edited successfully.";
