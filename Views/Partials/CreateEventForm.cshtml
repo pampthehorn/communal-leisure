@@ -1,7 +1,9 @@
 ﻿@using System.Web
+@using Umbraco.Cms.Core.Security
 @using Umbraco.Cms.Web.Common
 @inject IPublishedValueFallback _ipvfb;
 @inject UmbracoHelper _helper;
+@inject IMemberManager _memberManager;
 @model Event
 
 <div id="eventform">
@@ -14,13 +16,18 @@
         var tags = events?.Tags?.Select(m => new Tag(m, _ipvfb));
         var tagSelectList = tags?.Select(m => new SelectListItem(m.Name, m.Id.ToString()));
         var venues = events.Siblings().FirstOrDefault(m=>m.IsDocumentType(Venues.ModelTypeAlias)).DescendantsOfType(Venue.ModelTypeAlias).Select(m=> new Venue(m,_ipvfb));
-
+        string memberEmail = null;
+        if (Context.User?.Identity?.IsAuthenticated ?? false)
+        {
+            var currentUser = await _memberManager.GetCurrentMemberAsync();
+            memberEmail = currentUser?.Email;
+        }
 
         <div>
             <label asp-for="Poster">Event Poster:</label>
             <img id="posterPreview" src="#" alt="Poster Preview"
                  style="display:none; max-width: 200px; max-height: 300px; margin-bottom: 10px; border: 1px solid #ccc;" />
-            <input asp-for="Poster" type="file" accept="image/*" />
+            <input asp-for="Poster" type="file" accept="image/*" required />
             <span asp-validation-for="Poster" class="text-danger"></span>
         </div>
         <div>
@@ -34,13 +41,13 @@
             <span asp-validation-for="EndDate" class="text-danger"></span>
         </div>
         <div>
-            <label asp-for="Acts">Acts:</label>
-            <input asp-for="Acts" type="text" />
+            <label asp-for="Acts">Acts/Event title:</label>
+            <input asp-for="Acts" type="text" required />
             <span asp-validation-for="Acts" class="text-danger"></span>
         </div>
         <div>
             <label asp-for="Venue">Venue:</label>
-            <input asp-for="Venue" type="text" list="venues" />
+            <input asp-for="Venue" type="text" list="venues" required />
             <span asp-validation-for="Venue" class="text-danger"></span>
             <datalist id="venues">
                 @foreach(var venue in venues)
@@ -74,7 +81,7 @@
         </div>
         <div>
             <label asp-for="Email">Email:</label>
-            <input asp-for="Email" type="email" />
+            <input asp-for="Email" type="email" value="@memberEmail" required />
             <span asp-validation-for="Email" class="text-danger"></span>
         </div>
         <div>

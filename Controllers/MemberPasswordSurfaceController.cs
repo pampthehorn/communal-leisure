@@ -54,7 +54,7 @@ namespace website.Controllers
             if (member != null)
             {
                 var token = await _memberManager.GeneratePasswordResetTokenAsync(member);
-
+                
                 var resetPage = _publishedContentQuery.ContentAtRoot()
                                      .FirstOrDefault(x => x.ContentType.Alias == "forgotPasswordPage").Children()
                                 .FirstOrDefault(x => x.ContentType.Alias == "resetPasswordPage");

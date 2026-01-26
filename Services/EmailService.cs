@@ -33,7 +33,7 @@ namespace website.Services
                 throw new InvalidOperationException("SMTP settings are not configured in appsettings.json.");
             }
 
-            var fromMailAddress = new MailAddress(fromAddress);
+            var fromMailAddress = new MailAddress(fromAddress, "Communal Leisure");
             var toMailAddress = new MailAddress(toEmail);
 
             using (var mailMessage = new MailMessage(fromMailAddress, toMailAddress))

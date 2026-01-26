@@ -61,7 +61,6 @@ public class CheckoutController : SurfaceController
     [ValidateAntiForgeryToken]
     public IActionResult SubmitTicketSelection(TicketSelectionViewModel model)
     {
-        // ... (No changes to this method) ...
         var selectedTickets = model.Tickets.Where(t => t.Quantity > 0).ToList();
 
         if (!selectedTickets.Any())

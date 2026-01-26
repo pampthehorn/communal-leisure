@@ -6,6 +6,10 @@
 @inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<IPublishedContent>
 @inject IPublishedValueFallback _ipvfb;
 
+@{
+    var isLoggedIn = Context.User?.Identity?.IsAuthenticated ?? false;
+
+}
 <html lang="en">
 
 <head>
@@ -16,24 +20,20 @@
 	<link rel="shortcut icon" href="/favicon.ico">
 	<meta name="theme-color" content="#000000">
 	<link rel="manifest" href="/manifest.json">
-	<title>Communal Leisure</title>
-    <meta name="description" content="Glasgow/Edinburgh DIY Event Listings">
-	<link href="/all.css?v=202510191502" rel="stylesheet">
+    <link href="/all.css?v=20260125" rel="stylesheet">
 
-    <meta property="og:title" content="Communal Leisure">
-    <meta property="og:description" content="Glasgow/Edinburgh DIY Event Listings">
-    <meta property="og:image" content="https://communalleisure.com/img/rabbit.png">
-    <meta property="og:url" content="https://communalleisure.com">
-    <meta property="og:type" content="website">
 
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Communal Leisure">
-    <meta name="twitter:description" content="Glasgow/Edinburgh DIY Event Listings">
-    <meta name="twitter:image" content="https://communalleisure.com/img/rabbit.png">
+
+      @await RenderSectionAsync("Head", required: false)
 
 </head>
 
 <body>
+    <a href="/login"
+       style="position: absolute; top: 10px; right: 15px; font-size: 12px; text-decoration: none; z-index: 999; color: inherit;">
+        @(isLoggedIn?"logout":"login")
+    </a>
+
     <header>
         <a href="/"><img src="/img/rabbit.png" alt="Communal Leisure rabbit illustration by Oliver Pitt" /></a>
 
@@ -95,7 +95,6 @@
         </div>
         }
 
-        @Html.Partial("~/Views/Partials/Logout.cshtml")
     </footer>
 
 

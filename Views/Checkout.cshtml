@@ -116,7 +116,7 @@
             
             stripe = Stripe(publishableKey);
             
-            const appearance = { theme: 'none' };
+            const appearance = { theme: 'stripe' };
             elements = stripe.elements({ appearance, clientSecret });
 
                 const paymentElement = elements.create("payment",{

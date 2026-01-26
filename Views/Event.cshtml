@@ -4,6 +4,7 @@
 @inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.Event>
 @using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
 @using website
+@using System.Text.Encodings.Web
 @inject IPublishedValueFallback _ipvfb;
 @inject IMemberManager _memberManager;
 @inject IMemberService _memberService;
@@ -23,37 +24,159 @@
         var roles = await _memberManager.GetRolesAsync(currentUser);
         bool isSuperuser = roles.Contains("superuser");
         isMyEvent = isSuperuser || Model.Organizer != null && _memberManager.FindByIdAsync(Model.Organizer.Id.ToString()).Result.Email == currentUser.Email;
-
     }
     else if (!Model.EditKey.IsNullOrWhiteSpace() && editKey == Model.EditKey)
     {
         isMyEvent = true;
     }
 
-
     var startDate = Model.StartDate.ToUniversalTime();
     var endDate = Model.EndDate.ToUniversalTime();
-    string displayDate = $"{startDate:R} - {(startDate.Date != endDate.Date ? endDate.ToString("R") : endDate.ToString("HH:mm"))}";
+   // string displayDate = $"{startDate:R} - {(startDate.Date != endDate.Date ? endDate.ToString("R") : endDate.ToString("HH:mm"))}";
+    string displayDate = $"{startDate:dddd, d MMM} • {startDate:t} - {(startDate.Date != endDate.Date ? endDate.ToString("t") : endDate.ToString("t"))}";
 
+    var imageUrl = Model.Poster != null ? Model.Poster.Url(mode: UrlMode.Absolute) : "https://communalleisure.com/img/rabbit.png";
+
+    var metaDescription = !string.IsNullOrWhiteSpace(Model.Description)
+        ? (Model.Description.Length > 160 ? Model.Description.Substring(0, 157) + "..." : Model.Description)
+        : $"Event listing for {Model.Name} at {Model.Venue} on {startDate:D}";
+
+    var venueNode = Model.Venues?.OfType<Venue>().FirstOrDefault();
+
+    var fullDescription = !string.IsNullOrWhiteSpace(Model.Description) ? Model.Description : metaDescription;
 }
-<h2>@Model.Name</h2>
+
+@section Head {
+    <title>@Model.Name at @(venueNode != null ? venueNode.Name : Model.Venue) | Communal Leisure</title>
+    <meta name="description" content="@metaDescription">
+
+    <meta property="og:title" content="@Model.Name">
+    <meta property="og:description" content="@metaDescription">
+    <meta property="og:image" content="@imageUrl">
+    <meta property="og:url" content="@Model.Url(mode: UrlMode.Absolute)">
+    <meta property="og:type" content="website">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@Model.Name">
+    <meta name="twitter:description" content="@metaDescription">
+    <meta name="twitter:image" content="@imageUrl">
+
+    <script type="application/ld+json">
+        {
+          "@@context": "https://schema.org",
+          "@@type": "MusicEvent",
+          "name": "@JavaScriptEncoder.Default.Encode(Model.Name)",
+          "startDate": "@startDate.ToString("yyyy-MM-ddTHH:mm:ssZ")",
+          "endDate": "@endDate.ToString("yyyy-MM-ddTHH:mm:ssZ")",
+          "eventStatus": "https://schema.org/EventScheduled",
+          "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+          "location": {
+            "@@type": "Place",
+            @if (venueNode != null)
+            {
+                    <text>
+                    "name": "@JavaScriptEncoder.Default.Encode(venueNode.Name)",
+                    "address": {
+                      "@@type": "PostalAddress",
+                      "streetAddress": "@JavaScriptEncoder.Default.Encode(venueNode.Address ?? "")",
+                      "addressLocality": "@JavaScriptEncoder.Default.Encode(venueNode.City ?? "")",
+                      "postalCode": "@JavaScriptEncoder.Default.Encode(venueNode.Postcode ?? "")",
+                      "addressCountry": "UK"
+                    }
+                    </text>
+            }
+            else
+            {
+                    <text>
+                    "name": "@JavaScriptEncoder.Default.Encode(Model.Venue ?? "TBA")"
+                    </text>
+            }
+          },
+          "image": [
+            "@imageUrl"
+          ],
+          "description": "@JavaScriptEncoder.Default.Encode(fullDescription)",
+          @if (Model.Tickets != null && Model.Tickets.Any())
+          {
+                    var ticketList = Model.Tickets.ToList();
+                    <text>
+                    "offers": [
+                        @for (int i = 0; i < ticketList.Count; i++)
+                        {
+                                var ticketItem = new Ticket(ticketList[i].Content, _publishedValueFallback);
+                                <text>
+                                {
+                                    "@@type": "Offer",
+                                    "name": "@JavaScriptEncoder.Default.Encode(ticketItem.Type)",
+                                    "price": "@ticketItem.Cost",
+                                    "priceCurrency": "GBP",
+                                    "url": "@Model.Url(mode: UrlMode.Absolute)",
+                                    "availability": "https://schema.org/InStock"
+                                }@(i < ticketList.Count - 1 ? "," : "")
+                                </text>
+                        }
+                    ],
+                    </text>
+          }
+          "performer": [
+            {
+              "@@type": "PerformingGroup",
+              "name": "@JavaScriptEncoder.Default.Encode(Model.Acts ?? Model.Name)"
+            }
+          ]
+        }
+    </script>
+}
+
+
+<h2>@Model.Acts</h2>
 <div class="event-page">
 
     <div class="event-info">
         <p>
-            <time>@displayDate</time>
+            <time datetime="@startDate.ToString("s")">@displayDate</time>
         </p>
 
         <p>@Model.Description</p>
-        <p>@Model.Venue</p>
-        <a href="@Model.Link" target="_blank">@Model.Link</a>
+
+        @if (venueNode != null)
+        {
+            <p>
+                <strong>@venueNode.Name</strong><br />
+                @if (!string.IsNullOrWhiteSpace(venueNode.Address))
+                {
+                    <span>@venueNode.Address<br /></span>
+                }
+                @if (!string.IsNullOrWhiteSpace(venueNode.City))
+                {
+                    <span>@venueNode.City<br /></span>
+                }
+                @if (!string.IsNullOrWhiteSpace(venueNode.Postcode))
+                {
+                    <span>@venueNode.Postcode</span>
+                }
+            </p>
+            @if (!string.IsNullOrWhiteSpace(venueNode.Website))
+            {
+                <a href="@venueNode.Website" target="_blank">Venue Website</a>
+        
+                <br />
+            }
+        }
+        else
+        {
+            <p>@Model.Venue</p>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.Link))
+        {
+            <a href="@Model.Link" target="_blank">@Model.Link</a>
+        }
     </div>
 
 
     @if (Model.Tickets != null && Model.Tickets.Any() && Model.Value<bool>("ticketsOnline"))
     {
-
-
         @using (Html.BeginUmbracoForm<CheckoutController>(nameof(CheckoutController.SubmitTicketSelection), FormMethod.Post))
         {
             var ticketsList = Model.Tickets.ToList();
@@ -94,20 +217,28 @@
 
 
     <div class="event-image">
-        <img src="@($"{Model.Poster.Url()}?width=400&quality=80")" alt="@Model.Name" />
-        <br /> <a href="@Model.Poster.Url()" download>View full size</a>
+        @if (Model.Poster != null)
+        {
+            <img src="@Model.Poster.GetCropUrl(width: 400, quality: 80)"
+                 srcset="@Model.Poster.GetCropUrl(width: 320, quality: 80) 320w,
+                                 @Model.Poster.GetCropUrl(width: 400, quality: 80) 400w,
+                                 @Model.Poster.GetCropUrl(width: 800, quality: 80) 800w"
+                 sizes="(max-width: 450px) 100vw, 400px"
+                 alt="@Model.Name" />
+
+            <br />
+            <a href="@Model.Poster.Url()" download>Download</a>
+        }
     </div>
-
-
 
 </div>
 
 
 @if (isMyEvent)
 {
-
     @Html.Partial("~/Views/Partials/EditEventForm.cshtml", new Event(Model, _ipvfb))
-
+}
+@if (isMyEvent && Model.Tickets != null && Model.Tickets.Any())
+{
     @await Component.InvokeAsync("EventOrders", new { eventNodeId = Model.Key })
-
 }

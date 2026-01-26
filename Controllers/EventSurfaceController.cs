@@ -215,10 +215,15 @@
         {
             try
                 {
+
+                if (poster == null) { throw new Exception("no poster"); }
+                if (acts == null) { throw new Exception("no acts"); }
+
+
                 var venues = _umbracoHelper.Content(1059).Siblings().FirstOrDefault(m => m.IsDocumentType(Venues.ModelTypeAlias)).DescendantsOfType(Venue.ModelTypeAlias).Select(m => new Venue(m, _ipvfb));
                 var venueMatch = venues.FirstOrDefault(m => m.Name + ", " + m.City == venue);
         
-                var eventNode = _contentService.Create(acts,1059, Event.ModelTypeAlias ,-1);
+                var eventNode = _contentService.Create(startDate.ToString("yyyy-MM-dd") + " " + acts,1059, Event.ModelTypeAlias ,-1);
                     organizer = "";
                     var currentMember = await _memberManager.GetCurrentMemberAsync();
                     if (currentMember != null) {
@@ -298,10 +303,14 @@
         public async Task<IActionResult> EditEventAsync(int nodeId, IFormFile poster, DateTime startDate, DateTime endDate, string acts, string venue, string description, string link, string organizer, string tags, string email, string status)
         {
 
-
-
             try
             {
+
+              //  if (poster == null) { throw new Exception("no poster"); }
+                if (acts == null) { throw new Exception("no acts"); }
+              if (venue == null) { throw new Exception("no venue"); }
+              if(email==null) { throw new Exception("no email"); }
+
                 var eventNode = _contentService.GetById(nodeId);
                 var venues = _umbracoHelper.Content(1059).Siblings().FirstOrDefault(m => m.IsDocumentType(Venues.ModelTypeAlias)).DescendantsOfType(Venue.ModelTypeAlias).Select(m => new Venue(m, _ipvfb));
                 var venueMatch = venues.FirstOrDefault(m => m.Name + ", " + m.City == venue);
@@ -333,6 +342,7 @@
                     tagsToSave = splitTags.Aggregate((a, b) => a + "," + b);
                 }
 
+                eventNode.Name = startDate.ToString("yyyy-MM-dd") + " " + acts;
                 eventNode.SetValue("startDate", startDate);
                 eventNode.SetValue("endDate", endDate);
                 eventNode.SetValue("acts", acts);
@@ -362,7 +372,7 @@
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Error editing event. Please try again.";
+                TempData["ErrorMessage"] = "Error editing event. Please try again." + ex.Message;
 
                 return CurrentUmbracoPage();
             }

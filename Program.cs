@@ -1,3 +1,4 @@
+using website.Controllers;
 using website.Services;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,7 @@ builder.Services.AddCors(options =>
 
 });
 
+builder.Services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
 builder.Services.AddSingleton<IEmailService, EmailService>();
 builder.Services.AddScoped<IOrderProcessingService, OrderProcessingService>();
 

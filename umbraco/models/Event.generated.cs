@@ -50,7 +50,7 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 		// properties
 
 		///<summary>
-		/// Act(s)
+		/// Acts/Event title
 		///</summary>
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "13.1.0+802e5a8")]
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
@@ -149,6 +149,13 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
 		[ImplementPropertyType("tickets")]
 		public virtual global::Umbraco.Cms.Core.Models.Blocks.BlockListModel Tickets => this.Value<global::Umbraco.Cms.Core.Models.Blocks.BlockListModel>(_publishedValueFallback, "tickets");
+
+		///<summary>
+		/// TicketsOnline
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "13.1.0+802e5a8")]
+		[ImplementPropertyType("ticketsOnline")]
+		public virtual bool TicketsOnline => this.Value<bool>(_publishedValueFallback, "ticketsOnline");
 
 		///<summary>
 		/// Venue Text
