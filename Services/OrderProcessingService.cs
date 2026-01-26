@@ -1,4 +1,5 @@
 ﻿using Stripe;
+using System.Data.SqlTypes;
 using System.Globalization;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Infrastructure.Persistence;
@@ -41,8 +42,13 @@ namespace website.Services
 
         public async Task<OrderCompletionResult> FinalizeOrderAsync(string paymentIntentId)
         {
+
+
             using var db = _databaseFactory.CreateDatabase();
-            var order = await db.SingleOrDefaultAsync<OrderModel>("WHERE StripeSessionId = @0", paymentIntentId);
+
+            var orderQuery = db.SqlContext.Sql("WHERE StripeSessionId = @0", paymentIntentId);
+
+            var order = await db.SingleOrDefaultAsync<OrderModel>(orderQuery);
 
             if (order == null)
             {
@@ -50,7 +56,10 @@ namespace website.Services
                 return new OrderCompletionResult { Success = false };
             }
 
-            var tickets = await db.FetchAsync<TicketModel>("WHERE OrderId = @0", order.Id);
+            var ticketsQuery = db.SqlContext.Sql("WHERE OrderId = @0", order.Id);
+
+
+            var tickets = await db.FetchAsync<TicketModel>(ticketsQuery);
 
             if (order.Status == "Completed")
             {
@@ -70,11 +79,12 @@ namespace website.Services
             {
                 var eventPage = _umbracoHelper.Content(firstTicket.EventNodeId) as Event;
 
-                if (eventPage?.Organizer is Member organizer)
+                if (eventPage?.Organizer != null)
                 {
-                    if (!string.IsNullOrWhiteSpace(organizer.StripeSecretKey))
+                    var organizer = eventPage?.Organizer;
+                    if (!string.IsNullOrWhiteSpace(organizer.Value<string>("stripeSecretKey")))
                     {
-                        stripeSecretKey = organizer.StripeSecretKey;
+                        stripeSecretKey = organizer.Value<string>("stripeSecretKey");
                     }
                 }
             }

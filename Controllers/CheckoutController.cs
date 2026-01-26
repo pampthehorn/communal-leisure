@@ -132,15 +132,16 @@ public class CheckoutController : SurfaceController
         var eventId = storedOrderData.Tickets.First().EventNodeId;
         var eventPage = _umbracoHelper.Content(eventId) as Event;
 
-        if (eventPage?.Organizer is Member organizer)
+        if (eventPage?.Organizer !=null)
         {
-            if (!string.IsNullOrWhiteSpace(organizer.StripeSecretKey))
+            var organizer = eventPage?.Organizer;
+            if (!string.IsNullOrWhiteSpace(organizer.Value<string>("stripeSecretKey")))
             {
-                stripeSecretKey = organizer.StripeSecretKey;
+                stripeSecretKey = organizer.Value<string>("stripeSecretKey");
             }
-            if (!string.IsNullOrWhiteSpace(organizer.StripePublicKey))
+            if (!string.IsNullOrWhiteSpace(organizer.Value<string>("stripePublicKey")))
             {
-                stripePublishableKey = organizer.StripePublicKey;
+                stripePublishableKey = organizer.Value<string>("stripePublicKey");
             }
         }
 

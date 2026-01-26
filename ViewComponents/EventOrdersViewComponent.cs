@@ -43,15 +43,18 @@
                 {
                     using var db = _databaseFactory.CreateDatabase();
 
-             
-                    var sql = @"
-                    SELECT O.* FROM Orders O
-                    JOIN Ticket T ON O.Id = T.OrderId
-                    WHERE T.EventNodeId = @0 AND O.Status = 'Completed'
-                    GROUP BY O.Id, O.TotalAmount, O.CustomerName, O.CustomerEmail, O.CreatedDate, O.Status, O.StripeSessionId, O.StripeCustomerId
-                    ORDER BY O.CustomerName"; 
 
-                    var completedOrders = await db.FetchAsync<OrderModel>(sql, eventNodeId);
+                    var sqlString = @"
+    SELECT O.* FROM Orders O
+    JOIN Ticket T ON O.Id = T.OrderId
+    WHERE T.EventNodeId = @0 AND O.Status = 'Completed'
+    GROUP BY O.Id, O.TotalAmount, O.CustomerName, O.CustomerEmail, O.CreatedDate, O.Status, O.StripeSessionId, O.StripeCustomerId
+    ORDER BY O.CustomerName";
+
+                    // FIX 1: Wrap the string and the parameter in db.Sql()
+                    var query = db.SqlContext.Sql(sqlString, eventNodeId);
+
+                    var completedOrders = await db.FetchAsync<OrderModel>(query);
 
                     if (!completedOrders.Any())
                     {
@@ -60,7 +63,9 @@
 
                     var completedOrderIds = completedOrders.Select(o => o.Id).ToList();
 
-                    var allTickets = await db.FetchAsync<TicketModel>("WHERE OrderId IN (@0) AND EventNodeId = @1", completedOrderIds, eventNodeId);
+                    var ticketsQuery = db.SqlContext.Sql("WHERE OrderId IN (@0) AND EventNodeId = @1", completedOrderIds, eventNodeId);
+
+                    var allTickets = await db.FetchAsync<TicketModel>(ticketsQuery);
 
                     var ticketsByOrderId = allTickets.GroupBy(t => t.OrderId)
                                                      .ToDictionary(g => g.Key, g => g.AsEnumerable());
