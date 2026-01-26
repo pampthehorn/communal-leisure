@@ -1,36 +1,45 @@
 ﻿@using Umbraco.Cms.Core.Security
 @using Umbraco.Cms.Core.Services
-@using Umbraco.Cms.Web.Common.PublishedModels;
-@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
+@using Umbraco.Cms.Web.Common.PublishedModels
+@using Microsoft.Extensions.Configuration
+@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels
 @inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<EventsViewModel>
 @inject IPublishedValueFallback _ipvfb;
-@inject IMemberManager _memberManager;
-@inject IMemberService _memberService;
 @model EventsViewModel
+@inject IConfiguration _config;
 
 @{
     Layout = "_Layout.cshtml";
     var dateFormat = "ddd d MMM HH:mm";
+    int _pageSize = int.Parse(_config["EventsPageSize"]);
 }
+@section Head {
+    <title>Communal Leisure</title>
+    <meta name="description" content="Glasgow/Edinburgh DIY Event Listings">
+    <meta property="og:title" content="Communal Leisure">
+    <meta property="og:description" content="Glasgow/Edinburgh DIY Event Listings">
+    <meta property="og:image" content="https://communalleisure.com/img/rabbit.png">
+    <meta property="og:url" content="https://communalleisure.com">
+    <meta property="og:type" content="website">
 
-
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success">
-        @TempData["SuccessMessage"]
-    </div>
-}
-
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger">
-        @TempData["ErrorMessage"]
-    </div>
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Communal Leisure">
+    <meta name="twitter:description" content="Glasgow/Edinburgh DIY Event Listings">
+    <meta name="twitter:image" content="https://communalleisure.com/img/rabbit.png">
 }
 
 <div>
     <nav>
-        <form method="get" id="filters">
+  
+
+        <div class="view-toggle">
+            <button id="view-grid" class="view-btn @(Model.ViewMode == "grid" ? "active" : "")" data-view="grid">Grid</button>
+            <button id="view-text" class="view-btn @(Model.ViewMode == "list" ? "active" : "")" data-view="text">List</button>
+                    <a href="/add-event">Add Event</a>
+
+        </div>
+
+              <form method="get" id="filters">
             Filters: 
             <select id="SelectedTag" name="SelectedTag">
                 <!option value="everything" @(Model.SelectedTag == "everything" ? "selected" : "")>Everything</!option>
@@ -40,7 +49,7 @@
                 }
             </select>
 
-        <select id="SelectedCity" name="SelectedCity">
+            <select id="SelectedCity" name="SelectedCity">
                 <!option value="everywhere" @(Model.SelectedCity == "everywhere" ? "selected" : "")>Everywhere</!option>
                 @foreach(var city in Model.Cities)
                 {
@@ -49,50 +58,134 @@
             </select>
 
             <input type="hidden" name="PageNumber" value="1" />
+            
+            <input type="hidden" id="ViewMode" name="ViewMode" value="@Model.ViewMode" />
+        </form>
 
-@*             <button type="submit">Filter</button>
- *@        </form>
-
-        <a href="/add-event">Add Event</a>
     </nav>
-        <ul class="listing" id="events">
-            @if (Model.Events != null && Model.Events.Count > 0)
+    
+    <ul class="listing @(Model.ViewMode == "list" ? "list-view" : "grid-view")" id="events">
+        @if (Model.Events != null && Model.Events.Count > 0)
+        {
+            if (Model.ViewMode == "list")
             {
-                foreach (var e in Model.Events)
-                {
-                    var startDate = e.startDate.ToUniversalTime();
-                    var endDate = e.endDate.ToUniversalTime();
-                    string displayDate = $"{startDate.ToString(dateFormat)} - {(startDate.Date != endDate.Date ? endDate.ToString(dateFormat) : endDate.ToString("HH:mm"))}";
-
-                  <li class="event">
-                        <a href="@e.url">
-                            <img src="@($"{e.poster.Url}?width=400&quality=80")" alt="@e.name" />
-                            </a>
-                        <h5>
-                            <span title="add to calendar">📅</span>
-                            <time>@displayDate</time>
-                        </h5>
-                        <h2>@e.name</h2>
-                        <p>@e.description</p>
-                        <p>@e.venue</p>
-                        <a href="@e.link" target="_blank">@e.link</a>
-                    </li>
-                }
+                @await Html.PartialAsync("_EventList", Model.Events)
             }
             else
             {
-                <li>No events found.</li>
+                @await Html.PartialAsync("_EventGrid", Model.Events)
             }
-        </ul>
-
-        @if (Model.Events.Count == 5)
-        {
-            <form method="get">
-                <input type="hidden" name="SelectedTag" value="@Model.SelectedTag" />
-                <input type="hidden" name="SelectedCity" value="@Model.SelectedCity" />
-                <input type="hidden" name="PageNumber" value="@(Model.PageNumber + 1)" />
-                <button type="submit">Load More</button>
-            </form>
         }
-  
+        else
+        {
+            <li>No events found.</li>
+        }
+    </ul>
+
+    @if (Model.ViewMode == "grid" && Model.Events.Count < Model.TotalEvents)
+    {
+        <div style="text-align: center; margin:20px;">
+            <button id="loadMoreBtn" type="button">Load more</button>
+        </div>
+    }
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            const eventsList = document.getElementById('events');
+            const filterForm = document.getElementById('filters');
+            const selectedTag = document.getElementById('SelectedTag');
+            const selectedCity = document.getElementById('SelectedCity');
+
+            const viewModeInput = document.getElementById('ViewMode');
+            const viewGridBtn = document.getElementById('view-grid');
+            const viewTextBtn = document.getElementById('view-text');
+
+            let pageNumber = @Model.PageNumber;
+            const pageSize = @(_pageSize);
+            let isLoading = false;
+
+            selectedTag.addEventListener('change', () => filterForm.submit());
+            selectedCity.addEventListener('change', () => filterForm.submit());
+
+            function switchView(view) {
+                if (viewModeInput.value !== view) {
+                    viewModeInput.value = view;
+                    filterForm.submit();
+                }
+            }
+
+            if (viewGridBtn) viewGridBtn.addEventListener('click', () => switchView('grid'));
+            if (viewTextBtn) viewTextBtn.addEventListener('click', () => switchView('list'));
+
+    
+            const loadMoreEvents = () => {
+                if (isLoading) return; 
+
+                isLoading = true;
+                loadMoreBtn.textContent = 'Loading...';
+
+                pageNumber++;
+                const tag = selectedTag.value;
+                const city = selectedCity.value;
+                const view = viewModeInput.value;
+
+                const url = `${window.location.pathname}?selectedTag=${encodeURIComponent(tag)}&selectedCity=${encodeURIComponent(city)}&pageNumber=${pageNumber}&viewMode=${view}`;
+
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        return response.text();
+                    })
+                    .then(html => {
+                        const trimmedHtml = html.trim();
+                        if (trimmedHtml.length > 0) {
+                            eventsList.insertAdjacentHTML('beforeend', trimmedHtml);
+
+                            const tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = trimmedHtml;
+                            const newItemsCount = tempDiv.querySelectorAll('li.event').length;
+
+                            if (newItemsCount < pageSize) {
+                                loadMoreBtn.style.display = 'none';
+                                if(observer) observer.disconnect();
+                            } else {
+                                loadMoreBtn.textContent = 'Load More';
+                                isLoading = false;
+                            }
+                        } else {
+                            loadMoreBtn.style.display = 'none';
+                            if(observer) observer.disconnect();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading more events:', error);
+                        loadMoreBtn.textContent = 'Error. Click to retry.';
+                        isLoading = false;
+                    });
+            };
+
+            if (loadMoreBtn) {
+                loadMoreBtn.addEventListener('click', loadMoreEvents);
+
+                const observerOptions = {
+                    root: null, 
+                    rootMargin: '100px', 
+                    threshold: 0.1
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting && !isLoading) {
+                            loadMoreEvents();
+                        }
+                    });
+                }, observerOptions);
+
+                observer.observe(loadMoreBtn);
+            }
+        });
+    </script>
+}

@@ -1,0 +1,74 @@
+﻿@using website.Models
+@model List<EventItem>
+@{
+    Layout = null;
+    var dateFormat = "ddd d MMM HH:mm";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        /* Email clients need inline styles, but simple CSS often works */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+        }
+
+        .event-item {
+            border-bottom: 1px solid #eee;
+            padding: 20px 0;
+        }
+
+        .event-date {
+            color: #555;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        h2 {
+            margin: 5px 0;
+            font-size: 18px;
+        }
+
+        a {
+            color: #000;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    @if (Model != null && Model.Count > 0)
+    {
+        <ul>
+            @foreach (var e in Model)
+            {
+                var startDate = e.startDate.ToUniversalTime();
+                var endDate = e.endDate.ToUniversalTime();
+                string displayDate = $"{startDate.ToString(dateFormat)} - {(startDate.Date != endDate.Date ? endDate.ToString(dateFormat) : endDate.ToString("HH:mm"))}";
+
+                <li class="event-item">
+                    @* Note: Images in emails must be absolute URLs (https://yoursite.com/media/...) *@
+                    <div class="event-details">
+                        <p class="event-date">📅 @displayDate</p>
+                        <h2><a href="@e.url">@e.name</a></h2>
+                        <p>@e.description</p>
+                        <p><strong>Venue:</strong> @e.venue</p>
+                      @*   @if (!string.IsNullOrEmpty(e.link))
+                        {
+                            <a href="@e.link">More Info</a>
+                        } *@
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>No events found for the next two weeks.</p>
+    }
+
+    <p><a href="https://communalleisure.com">communalleisure.com</a></p>
+</body>
+</html>

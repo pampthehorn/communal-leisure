@@ -17,7 +17,7 @@
 
     @if (TempData["ErrorMessage"] != null)
 {
-    <div class="alert alert-danger">
+        <div class="alert alert-danger field-validation-error">
         @TempData["ErrorMessage"]
     </div>
 }
@@ -31,7 +31,7 @@
                 <img src="@Model.Poster.Url()?width=300" /><br/>
             }
             <label asp-for="Poster">Event Poster:</label>
-            <input asp-for="Poster" type="file" accept="image/*" />
+            <input for="Poster" type="file" accept="image/*" />
             <span asp-validation-for="Poster" class="text-danger"></span>
         </div>
         <div>
@@ -45,13 +45,13 @@
             <span asp-validation-for="EndDate" class="text-danger"></span>
         </div>
         <div>
-            <label asp-for="Acts">Acts:</label>
-            <input asp-for="Acts" type="text" />
+            <label asp-for="Acts">Acts/Event title:</label>
+            <input asp-for="Acts" type="text" required />
             <span asp-validation-for="Acts" class="text-danger"></span>
         </div>
         <div>
             <label asp-for="Venue">Venue:</label>
-            <input asp-for="Venue" type="text" list="venues" />
+            <input asp-for="Venue" type="text" list="venues" required />
             <span asp-validation-for="Venue" class="text-danger"></span>
             <datalist id="venues">
                 @foreach (var venue in venues)

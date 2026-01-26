@@ -50,7 +50,7 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 		// properties
 
 		///<summary>
-		/// Act(s)
+		/// Acts/Event title
 		///</summary>
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "13.1.0+802e5a8")]
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
@@ -87,6 +87,13 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "13.1.0+802e5a8")]
 		[ImplementPropertyType("endDate")]
 		public virtual global::System.DateTime EndDate => this.Value<global::System.DateTime>(_publishedValueFallback, "endDate");
+
+		///<summary>
+		/// Hide: Hide from listing page. If published the event page will still exist
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "13.1.0+802e5a8")]
+		[ImplementPropertyType("hide")]
+		public virtual bool Hide => this.Value<bool>(_publishedValueFallback, "hide");
 
 		///<summary>
 		/// Link
@@ -134,6 +141,21 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
 		[ImplementPropertyType("tags")]
 		public virtual global::System.Collections.Generic.IEnumerable<global::Umbraco.Cms.Core.Models.PublishedContent.IPublishedContent> Tags => this.Value<global::System.Collections.Generic.IEnumerable<global::Umbraco.Cms.Core.Models.PublishedContent.IPublishedContent>>(_publishedValueFallback, "tags");
+
+		///<summary>
+		/// Tickets
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "13.1.0+802e5a8")]
+		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		[ImplementPropertyType("tickets")]
+		public virtual global::Umbraco.Cms.Core.Models.Blocks.BlockListModel Tickets => this.Value<global::Umbraco.Cms.Core.Models.Blocks.BlockListModel>(_publishedValueFallback, "tickets");
+
+		///<summary>
+		/// TicketsOnline
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "13.1.0+802e5a8")]
+		[ImplementPropertyType("ticketsOnline")]
+		public virtual bool TicketsOnline => this.Value<bool>(_publishedValueFallback, "ticketsOnline");
 
 		///<summary>
 		/// Venue Text

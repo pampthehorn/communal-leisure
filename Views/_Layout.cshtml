@@ -3,6 +3,14 @@
 @using Umbraco.Cms.Web.Common.Views
 @using Umbraco.Cms.Core.Models.PublishedContent
 @using Microsoft.AspNetCore.Html
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<IPublishedContent>
+@inject IPublishedValueFallback _ipvfb;
+
+@{
+    var isLoggedIn = Context.User?.Identity?.IsAuthenticated ?? false;
+
+}
+<html lang="en">
 
 <html lang="en">
 
@@ -14,9 +22,11 @@
 	<link rel="shortcut icon" href="/favicon.ico">
 	<meta name="theme-color" content="#000000">
 	<link rel="manifest" href="/manifest.json">
-	<title>Communal Leisure</title>
-    <meta name="description" content="Glasgow/Edinburgh DIY Event Listings">
-	<link href="/all.css" rel="stylesheet">
+    <link href="/all.css?v=20260125" rel="stylesheet">
+
+
+
+      @await RenderSectionAsync("Head", required: false)
 
     <meta property="og:title" content="Communal Leisure">
     <meta property="og:description" content="Glasgow/Edinburgh DIY Event Listings">
@@ -33,6 +43,11 @@
 </head>
 
 <body>
+    <a href="/login"
+       style="position: absolute; top: 10px; right: 15px; font-size: 12px; text-decoration: none; z-index: 999; color: inherit;">
+        @(isLoggedIn?"logout":"login")
+    </a>
+
     <header>
         <a href="/"><img src="/img/rabbit.png" alt="Communal Leisure rabbit illustration by Oliver Pitt" /></a>
 
@@ -40,15 +55,17 @@
         <p>Glasgow/Edinburgh DIY Event Listings</p>
     </header>
 
-
+    <main id="main-content">
 @RenderBody()
+</main>
 
-<hr/>
 <footer>
-  
 
-
-        <p>
+        @if (Umbraco.AssignedContentItem.IsDocumentType("events"))
+        {
+            <hr/>
+            <div>
+                <p>
             Communal Leisure is a space for discussion and sharing of music, art and politics, based in Glasgow. This Events Wall
             aims to primarily focus on independent promoters and DIY events, particularly if they are not-for-profit, free or cheap,
             creating space or platforms for oppressed groups, anti-capitalist, anti-racist, Queer and generally just bringing good
@@ -65,14 +82,14 @@
                   target="_blank">
                 <div id="mc_embed_signup_scroll">
                     <div class="mc-field-group">
-                        <p>
+                       
                             <label for="mce-EMAIL">mailing list </label><input type="email" name="EMAIL" class="required email"
-                                                                               placeholder="your email address" id="mce-EMAIL" value=""><input type="submit" name="subscribe"
-                                                                                                                                               id="mc-embedded-subscribe">
+                                                                               placeholder="your email address" id="mce-EMAIL" value="">
+                                                                               <input type="submit" name="subscribe" id="mc-embedded-subscribe">
                             <div data-lastpass-icon-root="true"
                                  style="position: relative !important; height: 0px !important; width: 0px !important; float: left !important;">
                             </div>
-                        </p>
+                        
                     </div>
                     <div id="mce-responses" class="clear">
                         <div class="response" id="mce-error-response" style="display: none;"></div>
@@ -89,16 +106,17 @@
         <p><a href="/zines/index.html">Communal Leisure zine archive</a></p>
         <a href="https://github.com/pampthehorn/communal-leisure/" target="_blank"><img src="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png" style="width:50px" /></a>
 
+        </div>
+        }
 
-
-    <footer>
-        @Html.Partial("~/Views/Partials/Logout.cshtml")
     </footer>
 
 
     <script src="/script.js"></script>
     <script type="module" src="/all.js"></script>
     <script type="module" src="/calendar.js"></script>
+
+        @await RenderSectionAsync("Scripts", required: false)
 
 </body>
 </html>

@@ -1,0 +1,15 @@
+﻿@using Umbraco.Cms.Web.Common.PublishedModels;
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.Login>
+@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
+@{
+    Layout = "_Layout.cshtml";
+}
+
+
+@* <p>Enter your email address below, and we'll send you a link to reset your password.</p>
+ *@
+@if (TempData["Status"] != null)
+{
+    <div class="alert alert-success">@TempData["Status"]</div>
+}
+@Html.Partial("~/Views/Partials/Logout.cshtml")

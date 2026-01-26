@@ -19,6 +19,11 @@ h1 {
 
 header {
     text-align: center;
+
+}
+
+main {
+    background:white;
 }
 
 footer {
@@ -26,7 +31,18 @@ footer {
 }
 
 nav {
-text-align:center;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10; /* Higher z-index */
+    /* Optional styling */
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+form#filters {
+    margin:0px;
 }
 
 h5 span:hover {
@@ -99,6 +115,23 @@ text-align: center;
     .event-page {
         flex-direction: column;
     }
+
+    .list-view .poster-container {
+        display: none;
+    }
+
+    li.event-text-item h2 {
+        font-size:inherit;
+    }
+
+    li.event-text-item h5 {
+        font-size: inherit;
+    }
+
+    li.event-text-item p {
+        font-size: inherit;
+    }
+
 }
 
 
@@ -129,7 +162,9 @@ code {
 
 a {
     color: black;
-    word-wrap: break-word;
+    word-wrap: break-word; 
+    overflow-wrap: break-word; 
+    word-break: break-word;
 }
 
 
@@ -140,4 +175,106 @@ a {
 .alert-success {
     background: lightgreen;
     padding: 5px;
+}
+
+
+.view-toggle {
+    margin: 10px 0;
+}
+
+.view-btn {
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    background: #f9f9f9;
+    cursor: pointer;
+}
+
+    .view-btn.active {
+        background: #333;
+        color: #fff;
+        border-color: #333;
+        cursor:default;
+    }
+
+ul.listing.list-view {
+    display: block;
+    grid-template-columns: none;
+    gap: 0;
+}
+
+li.event-text-item {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+    width: 100%;
+}
+
+    li.event-text-item .event-details {
+        flex: 1;
+        min-width: 0;
+    }
+
+    li.event-text-item h2 {
+        font-size: 1.2rem; 
+        margin: 5px 0;
+    }
+
+    li.event-text-item h5 {
+        font-size: 0.9rem;
+        color: #555;
+        margin: 0;
+    }
+
+    li.event-text-item p {
+        font-size: 0.9rem;
+        margin: 5px 0;
+       
+    }
+
+
+.poster-container {
+    position: relative; 
+    flex-shrink: 0;
+}
+
+.poster-thumb {
+    width: 100px;
+    height: 100px;
+    object-fit: cover; 
+    display: block;
+    border: 1px solid #eee;
+}
+
+.poster-popover {
+    display: none; 
+    position: absolute;
+    top: 0;
+    left: 110px; 
+    width: 400px;
+    z-index: 10;
+    background: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 5px;
+}
+
+    .poster-popover img {
+        width: 100%;
+        display: block;
+    }
+
+.poster-container:hover .poster-popover {
+    display: block;
+}
+
+#loadMoreBtn {
+cursor:pointer;
+border:1px solid black;
+padding: 10px;
+}
+
+.field-validation-error {color:red;
 }

@@ -9,9 +9,10 @@ using Umbraco.Cms.Web.Common;
 
 public class EventsController : RenderController
 {
-    private const int PageSize = 100;
     private readonly IPublishedValueFallback _ipvfb;
     private readonly UmbracoHelper _umbracoHelper;
+    private readonly IConfiguration _config;
+    private readonly int _pageSize;
 
 
     public EventsController(
@@ -19,11 +20,14 @@ public class EventsController : RenderController
         ICompositeViewEngine compositeViewEngine,
         IUmbracoContextAccessor umbracoContextAccessor,
         IPublishedValueFallback ipvfb,
+        IConfiguration config,
         UmbracoHelper umbracoHelper)
         : base(logger, compositeViewEngine, umbracoContextAccessor)
     {
         _ipvfb = ipvfb;
         _umbracoHelper = umbracoHelper;
+        _config = config;
+        _pageSize = int.Parse(_config["eventsPageSize"]);
     }
 
     public override IActionResult Index()
@@ -32,24 +36,34 @@ public class EventsController : RenderController
 
         string selectedTag = query.ContainsKey("SelectedTag") ? query["SelectedTag"].ToString() : "everything";
         string selectedCity = query.ContainsKey("SelectedCity") ? query["SelectedCity"].ToString() : "everywhere";
+
+        string viewMode = query.ContainsKey("ViewMode") ? query["ViewMode"].ToString() : "grid";
+
         int pageNumber = 1;
         if (query.ContainsKey("PageNumber") && int.TryParse(query["PageNumber"], out var pn))
         {
             pageNumber = pn;
         }
 
-        var model = FetchAndProcessEvents(selectedTag, selectedCity, pageNumber).GetAwaiter().GetResult();
+        var model = FetchAndProcessEvents(selectedTag, selectedCity, pageNumber, viewMode).GetAwaiter().GetResult();
+
+        if (pageNumber > 1)
+        {
+            
+            return PartialView("_EventGrid", model.Events);
+        }
 
         return CurrentTemplate(model);
     }
 
-    private async Task<EventsViewModel> FetchAndProcessEvents(string selectedTag, string selectedCity, int pageNumber)
+    private async Task<EventsViewModel> FetchAndProcessEvents(string selectedTag, string selectedCity, int pageNumber, string viewMode)
     {
         var model = new EventsViewModel(CurrentPage, _ipvfb)
         {
             SelectedTag = selectedTag,
             SelectedCity = selectedCity,
-            PageNumber = pageNumber
+            PageNumber = pageNumber,
+            ViewMode = viewMode
         };
 
         var events = await GetEvents();
@@ -73,7 +87,6 @@ public class EventsController : RenderController
         model.Tags = allTags.OrderBy(t => t).ToList();
         model.Cities = allCities.OrderBy(c => c).ToList();
 
-        // Filter by selected tag/city
         if (selectedTag != "everything")
         {
             events = events.Where(e => e.tags.Split(',').Select(x => x.Trim()).Contains(selectedTag)).ToList();
@@ -84,7 +97,6 @@ public class EventsController : RenderController
             events = events.Where(e => e.city.Equals(selectedCity, StringComparison.OrdinalIgnoreCase)).ToList();
         }
 
-        // Sort the events as per the logic described earlier
         var today = DateTime.UtcNow.Date;
         events = events.OrderBy(e =>
         {
@@ -101,9 +113,20 @@ public class EventsController : RenderController
             );
         }).ToList();
 
-        // Implement pagination
-        int skip = (pageNumber - 1) * PageSize;
-        model.Events = events.Skip(skip).Take(PageSize).ToList();
+        model.TotalEvents = events.Count;
+
+        if (viewMode == "list")
+        {
+            model.Events = events;
+        }
+        else
+        {
+            int skip = (pageNumber - 1) * _pageSize;
+            model.Events = events.Skip(skip).Take(_pageSize).ToList();
+        }
+
+        return model;
+
 
         return model;
     }
@@ -114,7 +137,7 @@ public class EventsController : RenderController
        
             var events = new List<EventItem>();
             var parentNode = _umbracoHelper.Content(1059);
-            var children = parentNode.Children().Select(m => new Event(m, _ipvfb)).Where(m => m.EndDate >= DateTime.Today);
+            var children = parentNode.Children().Select(m => new Event(m, _ipvfb)).Where(m => m.EndDate >= DateTime.Now.AddHours(-1) && !m.Hide);
 
             var ukTimeZone = TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
 

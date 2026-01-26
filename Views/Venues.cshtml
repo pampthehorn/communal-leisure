@@ -1,0 +1,32 @@
+﻿@using Umbraco.Cms.Core.Security
+@using Umbraco.Cms.Core.Services
+@using Umbraco.Cms.Web.Common.PublishedModels;
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.Venues>
+@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
+@using website
+
+@inject IPublishedValueFallback _publishedValueFallback;
+
+@{
+    Layout = "_Layout.cshtml";
+
+    var venues = Model.Children().Select(m => new Venue(m, _publishedValueFallback)).GroupBy(m => m.City);
+}
+
+
+<h2>@Model.Name</h2>
+
+<div class="event-page">
+    @foreach (var city in venues)
+    {
+        
+    <h3>@city.Key</h3>    <ul>        @foreach(var venue in city.OrderBy(m=>m.Name.Replace("The ","")))
+        {
+            <li>
+           <a href="@venue.Url()">@venue.Name @venue.Postcode</a>
+            </li>
+        }
+        </ul>
+    }
+
+</div>

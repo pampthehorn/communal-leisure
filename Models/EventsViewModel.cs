@@ -15,5 +15,9 @@ public class EventsViewModel : Events
     public string SelectedTag { get; set; } = "everything";
     public string SelectedCity { get; set; } = "everywhere";
     public int PageNumber { get; set; } = 1;
+
+    public string ViewMode { get; set; } = "grid";
+
+    public int TotalEvents { get; set; }
 }
 

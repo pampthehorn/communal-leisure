@@ -1,0 +1,68 @@
+﻿@using System.Globalization
+@using website.Models
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<YourOrderViewModel>
+@{
+    Layout = "_Layout.cshtml";
+    var cultureInfo = new CultureInfo("en-GB");
+}
+
+<div class="container my-5">
+    @if (Model.Order != null && Model.Tickets.Any())
+    {
+        <div class="row mt-4">
+            <div class="col-md-8 offset-md-2">
+                <h3>Thank you for your order @(Model.Order.CustomerName)!!!</h3>
+                <p><em>Please keep a copy of this info for your records.</em></p>
+                <p>You have been emailed a copy to @(Model.Order.CustomerEmail) from comlesweb@gmail.com. Please check your spam folder.</p>
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h2>Order Summary</h2>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h2>Your Tickets (Summary)</h2>
+                    </div>
+                    <div class="card-body">
+                        <table class="table">
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h2>Your Individual Ticket Codes</h2>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var ticketGroup in Model.Tickets)
+                        {
+                            <h5 class="mt-3">@ticketGroup.Quantity x @ticketGroup.Type (@ticketGroup.EventName)</h5>
+
+                            @if (!string.IsNullOrEmpty(ticketGroup.TicketCodes))
+                            {
+                                var codes = ticketGroup.TicketCodes.Split(',');
+                                <ul class="list-group">
+                                    @foreach (var code in codes)
+                                    {
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Ticket Code:</span>
+                                            <strong style="font-family: 'Courier New', monospace; font-size: 1.2em;">@code</strong>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <p class="text-muted">No individual codes found for this item.</p>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+    }
+</div>
