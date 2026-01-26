@@ -50,9 +50,11 @@
 
     <header>
         <a href="/"><img src="/img/rabbit.png" alt="Communal Leisure rabbit illustration by Oliver Pitt" /></a>
-
+      @if(Umbraco.AssignedContentItem.IsDocumentType("events")){
         <h1>Communal Leisure</h1>
+  
         <p>Glasgow/Edinburgh DIY Event Listings</p>
+        }
     </header>
 
     <main id="main-content">
