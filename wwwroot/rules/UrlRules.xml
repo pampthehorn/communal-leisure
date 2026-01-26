@@ -1,0 +1,20 @@
+﻿<rewrite>
+  <rewriteMaps>
+    <rewriteMap name="StaticRedirects">
+      
+    </rewriteMap>
+    <rewriteMap name="TempRedirects">
+
+    </rewriteMap>
+  </rewriteMaps>
+  <rules>
+     <rule name="rss.xml rewrite" stopProcessing="true">
+      <match url="^rss.xml$" />
+      <action type="Rewrite" url="/rss" appendQueryString="false" />
+    </rule>
+    <rule name="Sitemap.xml rewrite" stopProcessing="true">
+      <match url="^sitemap.xml$" />
+      <action type="Rewrite" url="/sitemapxml" appendQueryString="false" />
+    </rule>
+  </rules>
+</rewrite>

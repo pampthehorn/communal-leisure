@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Rewrite;
 using website.Controllers;
 using website.Services;
 
@@ -38,6 +39,10 @@ WebApplication app = builder.Build();
 await app.BootUmbracoAsync();
 
 app.UseCors("MyCorsPolicy");
+
+var options = new RewriteOptions().AddIISUrlRewrite(app.Environment.WebRootFileProvider, "rules/UrlRules.xml");
+
+app.UseRewriter(options);
 
 app.UseUmbraco()
     .WithMiddleware(u =>

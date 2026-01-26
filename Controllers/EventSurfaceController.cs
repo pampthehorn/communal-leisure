@@ -306,7 +306,6 @@
             try
             {
 
-              //  if (poster == null) { throw new Exception("no poster"); }
                 if (acts == null) { throw new Exception("no acts"); }
               if (venue == null) { throw new Exception("no venue"); }
               if(email==null) { throw new Exception("no email"); }

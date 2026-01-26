@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNet.Cors" Version="5.3.0" />
     <PackageReference Include="Stripe.net" Version="48.3.0" />
+    <PackageReference Include="System.ServiceModel.Syndication" Version="10.0.2" />
     <PackageReference Include="Umbraco.Cms" Version="13.0.3" />
   </ItemGroup>
 
@@ -142,6 +143,10 @@
     <Content Update="wwwroot\zines\magazines\pdfs\Issue1-cover.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\rules\" />
   </ItemGroup>
 
   <PropertyGroup>
