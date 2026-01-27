@@ -129,7 +129,7 @@
 }
 
 
-<h2>@Model.Acts</h2>
+<h1>@Model.Acts</h1>
 <div class="event-page">
 
     <div class="event-info">
@@ -217,19 +217,21 @@
 
 
     <div class="event-image">
-        @if (Model.Poster != null)
-        {
-            <img src="@Model.Poster.GetCropUrl(width: 400, quality: 80)"
-                 srcset="@Model.Poster.GetCropUrl(width: 320, quality: 80) 320w,
-                                 @Model.Poster.GetCropUrl(width: 400, quality: 80) 400w,
-                                 @Model.Poster.GetCropUrl(width: 800, quality: 80) 800w"
-                 sizes="(max-width: 450px) 100vw, 400px"
-                 alt="@Model.Name" />
+    @if (Model.Poster != null)
+    {
+        <img src="@Model.Poster.GetCropUrl(width: 800, quality: 80)"
+             srcset="@Model.Poster.GetCropUrl(width: 400, quality: 80) 400w,
+                     @Model.Poster.GetCropUrl(width: 800, quality: 80) 800w,
+                     @Model.Poster.GetCropUrl(width: 1200, quality: 80) 1200w,
+                     @Model.Poster.GetCropUrl(width: 1600, quality: 80) 1600w"
+             sizes="(max-width: 768px) 100vw, 50vw"
+             alt="@Model.Name" 
+             style="width: 100%; height: auto;" />
 
-            <br />
-            <a href="@Model.Poster.Url()" download>Download</a>
-        }
-    </div>
+        <br />
+        <a href="@Model.Poster.Url()" download>Download</a>
+    }
+</div>
 
 </div>
 

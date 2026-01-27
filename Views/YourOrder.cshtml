@@ -13,14 +13,14 @@
             <div class="col-md-8 offset-md-2">
                 <h3>Thank you for your order @(Model.Order.CustomerName)!!!</h3>
                 <p><em>Please keep a copy of this info for your records.</em></p>
-                <p>You have been emailed a copy to @(Model.Order.CustomerEmail) from comlesweb@gmail.com. Please check your spam folder.</p>
+                <p>You have been emailed a copy to @(Model.Order.CustomerEmail) from noreply@communalleisure.com. Please check your spam folder.</p>
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h2>Order Summary</h2>
+                        <h1>Order Summary</h1>
                     </div>
                 </div>
 
-                <div class="card mb-4">
+          @*       <div class="card mb-4">
                     <div class="card-header">
                         <h2>Your Tickets (Summary)</h2>
                     </div>
@@ -28,12 +28,12 @@
                         <table class="table">
                         </table>
                     </div>
-                </div>
+                </div> *@
 
                 <div class="card mb-4">
-                    <div class="card-header">
+               @*      <div class="card-header">
                         <h2>Your Individual Ticket Codes</h2>
-                    </div>
+                    </div> *@
                     <div class="card-body">
                         @foreach (var ticketGroup in Model.Tickets)
                         {
@@ -62,7 +62,5 @@
             </div>
         </div>
     }
-    else
-    {
-    }
+  
 </div>

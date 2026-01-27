@@ -10,7 +10,6 @@ using Umbraco.Cms.Core.Routing;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Web;
 using Umbraco.Cms.Infrastructure.Persistence;
-using Umbraco.Cms.Infrastructure.Persistence.DatabaseAnnotations;
 using Umbraco.Cms.Web.Common;
 using Umbraco.Cms.Web.Common.PublishedModels;
 using Umbraco.Cms.Web.Website.Controllers;
@@ -19,7 +18,6 @@ using website.Models.Database;
 using website.Models.ViewModels;
 using website.Services;
 using Event = Umbraco.Cms.Web.Common.PublishedModels.Event;
-using Member = Umbraco.Cms.Web.Common.PublishedModels.Member;
 
 namespace website;
 
@@ -27,7 +25,6 @@ public class CheckoutController : SurfaceController
 {
     private readonly IUmbracoDatabaseFactory _databaseFactory;
     private readonly ILogger<CheckoutController> _logger;
-    private readonly IConfiguration _configuration;
     private readonly UmbracoHelper _umbracoHelper;
     private readonly IPublishedValueFallback _publishedValueFallback;
     private readonly IOrderProcessingService _orderProcessingService;
@@ -41,7 +38,6 @@ public class CheckoutController : SurfaceController
         IProfilingLogger profilingLogger,
         IPublishedUrlProvider publishedUrlProvider,
         ILogger<CheckoutController> logger,
-        IConfiguration configuration,
         UmbracoHelper umbracoHelper,
         IEmailService emailService,
         IOrderProcessingService orderProcessingService,
@@ -50,7 +46,6 @@ public class CheckoutController : SurfaceController
     {
         _databaseFactory = databaseFactory;
         _logger = logger;
-        _configuration = configuration;
         _umbracoHelper = umbracoHelper;
         _publishedValueFallback = publishedValueFallback;
         _emailService = emailService;
@@ -59,7 +54,7 @@ public class CheckoutController : SurfaceController
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult SubmitTicketSelection(TicketSelectionViewModel model)
+    public async Task<IActionResult> SubmitTicketSelection(TicketSelectionViewModel model)
     {
         var selectedTickets = model.Tickets.Where(t => t.Quantity > 0).ToList();
 
@@ -69,28 +64,65 @@ public class CheckoutController : SurfaceController
         }
 
         var eventNode = _umbracoHelper.Content(model.EventNodeId) as Event;
-        if (eventNode == null)
-        {
-            return BadRequest("Event not found.");
-        }
+        if (eventNode == null) return BadRequest("Event not found.");
 
         var orderTickets = new List<TicketModel>();
+        long totalCostCents = 0;
+
         foreach (var selectedTicket in selectedTickets)
         {
             var ticketContent = eventNode.Tickets.FirstOrDefault(t => t.Content.Key == selectedTicket.TicketId)?.Content;
             if (ticketContent == null) continue;
 
             var ticket = new Ticket(ticketContent, _publishedValueFallback);
+            int itemCost = (int)(ticket.Cost * 100);
+            totalCostCents += (itemCost * selectedTicket.Quantity);
 
             orderTickets.Add(new TicketModel
             {
                 EventNodeId = model.EventNodeId,
                 TicketId = selectedTicket.TicketId,
                 Quantity = selectedTicket.Quantity,
-                EventName = $"{eventNode.Name} - {eventNode.StartDate.ToString("yyyy-MM-dd")}",
+                EventName = $"{eventNode.Name} - {eventNode.StartDate:yyyy-MM-dd}",
                 Type = ticket.Type,
-                Cost = (int)(ticket.Cost * 100)
+                Cost = itemCost
             });
+        }
+
+        if (totalCostCents == 0)
+        {
+            var pin = new Random().Next(1000, 9999).ToString();
+
+            var freeOrder = new OrderModel
+            {
+                TotalAmount = 0,
+                CustomerName = model.CustomerName,
+                CustomerEmail = model.CustomerEmail,
+                Status = "PendingVerification",
+                CreatedDate = DateTime.UtcNow,
+                StripeSessionId = pin 
+            };
+
+            using var db = _databaseFactory.CreateDatabase();
+            await db.InsertAsync(freeOrder);
+
+            foreach (var ticket in orderTickets)
+            {
+                ticket.OrderId = freeOrder.Id;
+                await db.InsertAsync(ticket);
+            }
+
+            string subject = "Verify your free ticket order";
+            string body = $"<p>Hi {model.CustomerName},</p>" +
+                          $"<p>To complete your order for <strong>{eventNode.Name}</strong>, please enter the following verification code:</p>" +
+                          $"<h1 style='color:#333; letter-spacing: 5px;'>{pin}</h1>" +
+                          $"<p>Do not share this code.</p>";
+
+            await _emailService.SendEmailAsync(model.CustomerEmail, subject, body, new[] { "comlesweb@gmail.com" });
+
+            var freeCheckoutPage = _umbracoHelper.ContentAtRoot().DescendantsOrSelfOfType("checkout").FirstOrDefault();
+
+            return Redirect($"{freeCheckoutPage.Url()}?verify=true&oid={freeOrder.Id}");
         }
 
         var orderData = new OrderVm
@@ -103,12 +135,29 @@ public class CheckoutController : SurfaceController
         TempData["OrderData"] = JsonConvert.SerializeObject(orderData);
 
         var checkoutPage = _umbracoHelper.ContentAtRoot().DescendantsOrSelfOfType("checkout").FirstOrDefault();
-        if (checkoutPage == null)
-        {
-            return Content("ERROR: Checkout page not found in Umbraco.");
-        }
+        if (checkoutPage == null) return Content("ERROR: Checkout page not found.");
 
         return RedirectToUmbracoPage(checkoutPage);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ProcessVerification(int orderId, string pin)
+    {
+        var result = await _orderProcessingService.FinalizeFreeOrderAsync(orderId, pin);
+
+        if (result.Success)
+        {
+
+            var yourOrderPage = _umbracoHelper.ContentAtRoot().DescendantsOrSelfOfType("yourOrder").FirstOrDefault();
+            if (yourOrderPage != null)
+            {
+                return Redirect($"{yourOrderPage.Url()}?payment_intent={pin}");
+            }
+        }
+
+        TempData["VerificationError"] = "Invalid PIN. Please check your email and try again.";
+        return RedirectToAction("VerifyOrder", new { id = orderId });
     }
 
     [HttpPost]
@@ -214,19 +263,18 @@ public class CheckoutController : SurfaceController
 
     [HttpGet]
     public async Task<IActionResult> OrderComplete(
-        [FromQuery(Name = "payment_intent")] string paymentIntentId,
-        [FromQuery(Name = "payment_intent_client_secret")] string clientSecret)
+            [FromQuery(Name = "payment_intent")] string paymentIntentId,
+            [FromQuery(Name = "payment_intent_client_secret")] string clientSecret)
     {
         var result = await _orderProcessingService.FinalizeOrderAsync(paymentIntentId);
 
         if (!result.Success)
         {
-            _logger.LogWarning("OrderComplete was called with an invalid or failed payment_intent_id: {PaymentIntentId}", paymentIntentId);
+            _logger.LogWarning("OrderComplete called with invalid payment_intent_id: {PaymentIntentId}", paymentIntentId);
             return RedirectToUmbracoPage(_umbracoHelper.ContentAtRoot().First());
         }
 
         var viewModel = new OrderVm { Order = result.Order, Tickets = result.Tickets };
-
         return View("YourOrder", viewModel);
     }
 }
