@@ -72,6 +72,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 reader.readAsDataURL(file);
 
+                var allowExtraction = this.getAttribute('data-allow-extraction') === 'true';
+
+                if (!allowExtraction) {
+                    console.log("no extraction");
+                    return;
+                }
+
                 var formData = new FormData();
                 formData.append('file', file);
 

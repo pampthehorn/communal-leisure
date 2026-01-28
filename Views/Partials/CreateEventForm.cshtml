@@ -17,19 +17,24 @@
         var tagSelectList = tags?.Select(m => new SelectListItem(m.Name, m.Id.ToString()));
         var venues = events.Siblings().FirstOrDefault(m=>m.IsDocumentType(Venues.ModelTypeAlias)).DescendantsOfType(Venue.ModelTypeAlias).Select(m=> new Venue(m,_ipvfb));
         string memberEmail = null;
+
+        var currentUser = await _memberManager.GetCurrentMemberAsync();
+        bool isSuperuser = false;
+
         if (Context.User?.Identity?.IsAuthenticated ?? false)
         {
-            var currentUser = await _memberManager.GetCurrentMemberAsync();
+            var roles = await _memberManager.GetRolesAsync(currentUser);
+            isSuperuser = roles.Contains("superuser");
             memberEmail = currentUser?.Email;
         }
 
+       
         <div>
             <label asp-for="Poster">Event Poster:</label>
-            <img id="posterPreview" src="#" alt="Poster Preview"
-                 style="display:none; max-width: 200px; max-height: 300px; margin-bottom: 10px; border: 1px solid #ccc;" />
-            <input asp-for="Poster" type="file" accept="image/*" required />
-            <span asp-validation-for="Poster" class="text-danger"></span>
-        </div>
+            <input asp-for="Poster" type="file" accept="image/*" required 
+           data-allow-extraction="@isSuperuser.ToString().ToLower()" />
+    <span asp-validation-for="Poster" class="text-danger"></span>
+</div>
         <div>
             <label asp-for="StartDate">Start Date:</label>
             <input asp-for="StartDate" type="datetime-local" value="@startDate" />
