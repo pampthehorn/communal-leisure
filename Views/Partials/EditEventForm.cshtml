@@ -1,11 +1,24 @@
-﻿@model Event
+﻿@using System.Web
+@using Umbraco.Cms.Core.Security
+@using Umbraco.Cms.Web.Common
+@model Event
 @inject IPublishedValueFallback _ipvfb;
+@inject IMemberManager _memberManager;
 @{
     var events = new Events(Model.Parent, _ipvfb);
     var tags = events?.Tags?.Select(m=> new Tag(m,_ipvfb));
     var venues = events.Siblings().FirstOrDefault(m => m.IsDocumentType(Venues.ModelTypeAlias)).DescendantsOfType(Venue.ModelTypeAlias).Select(m => new Venue(m, _ipvfb));
 
     List<string> statuses = new List<string>() { "Going Ahead","Cancelled","Postponed"};
+
+        var currentUser = await _memberManager.GetCurrentMemberAsync();
+        bool isSuperuser = false;
+          if (Context.User?.Identity?.IsAuthenticated ?? false)
+        {
+        var roles = await _memberManager.GetRolesAsync(currentUser);
+        bool isSuperuser = roles.Contains("superuser");
+        }
+
 }
 <div id="eventform">
     @if (TempData["SuccessMessage"] != null)
@@ -30,9 +43,10 @@
             {
                 <img src="@Model.Poster.Url()?width=300" /><br/>
             }
-            <label asp-for="Poster">Event Poster:</label>
-            <input for="Poster" type="file" accept="image/*" />
-            <span asp-validation-for="Poster" class="text-danger"></span>
+           <label asp-for="Poster">Event Poster:</label>
+    <input id="Poster" name="Poster" type="file" accept="image/*" 
+           data-allow-extraction="@isSuperuser.ToString().ToLower()" />
+    <span asp-validation-for="Poster" class="text-danger"></span>
         </div>
         <div>
             <label asp-for="StartDate">Start Date:</label>
