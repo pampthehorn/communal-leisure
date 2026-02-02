@@ -16,7 +16,7 @@
           if (Context.User?.Identity?.IsAuthenticated ?? false)
         {
         var roles = await _memberManager.GetRolesAsync(currentUser);
-        bool isSuperuser = roles.Contains("superuser");
+        isSuperuser = roles.Contains("superuser");
         }
 
 }
