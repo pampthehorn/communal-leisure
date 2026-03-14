@@ -48,6 +48,31 @@ forwardedHeaderOptions.KnownProxies.Clear();
 app.UseForwardedHeaders(forwardedHeaderOptions);
 app.UseCors("MyCorsPolicy");
 
+if (app.Environment.IsDevelopment())
+{
+    app.Use(async (context, next) =>
+    {
+        var path = context.Request.Path.Value;
+        if (path != null && path.StartsWith("/media/", StringComparison.OrdinalIgnoreCase))
+        {
+            var localPath = Path.Combine(app.Environment.WebRootPath, path.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(localPath))
+            {
+                var liveUrl = $"https://communalleisure.com{path}{context.Request.QueryString}";
+                using var httpClient = new HttpClient();
+                var response = await httpClient.GetAsync(liveUrl);
+                if (response.IsSuccessStatusCode)
+                {
+                    context.Response.ContentType = response.Content.Headers.ContentType?.ToString() ?? "application/octet-stream";
+                    await response.Content.CopyToAsync(context.Response.Body);
+                    return;
+                }
+            }
+        }
+        await next();
+    });
+}
+
 var options = new RewriteOptions().AddIISUrlRewrite(app.Environment.WebRootFileProvider, "rules/UrlRules.xml");
 
 app.UseRewriter(options);
