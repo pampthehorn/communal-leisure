@@ -25,13 +25,13 @@
             </div>
 
             <div class="event-details">
-                <h5>
+                <p class="event-date">
                     <span title="add to calendar">📅</span>
                     <time>@displayDate</time>
-                </h5>
-                <h2><a href="@e.url">@e.name</a></h2>
+                </p>
+                <h3><a href="@e.url">@e.name</a></h3>
                 <p>@e.description</p>
-                <p>@e.venue</p>
+                <p>@if (!string.IsNullOrEmpty(e.venueUrl)) { <a href="@e.venueUrl">@e.venue</a> } else { @e.venue }</p>
                 <a href="@e.link" target="_blank">@e.link</a>
             </div>
         </li>

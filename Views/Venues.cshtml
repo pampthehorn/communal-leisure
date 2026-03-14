@@ -13,8 +13,23 @@
     var venues = Model.Children().Select(m => new Venue(m, _publishedValueFallback)).GroupBy(m => m.City);
 }
 
+@section Head {
+    <title>Venues — Glasgow & Edinburgh Gig Venues | Communal Leisure</title>
+    <link rel="canonical" href="@Model.Url(mode: UrlMode.Absolute)" />
+    <meta name="description" content="Browse gig venues in Glasgow and Edinburgh. Find independent music venues hosting DIY events, live music, and community gatherings.">
+    <meta property="og:title" content="Venues — Glasgow & Edinburgh Gig Venues | Communal Leisure">
+    <meta property="og:description" content="Browse gig venues in Glasgow and Edinburgh. Find independent music venues hosting DIY events, live music, and community gatherings.">
+    <meta property="og:image" content="https://communalleisure.com/img/rabbit.png">
+    <meta property="og:url" content="@Model.Url(mode: UrlMode.Absolute)">
+    <meta property="og:type" content="website">
 
-<h2>@Model.Name</h2>
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Venues — Glasgow & Edinburgh Gig Venues | Communal Leisure">
+    <meta name="twitter:description" content="Browse gig venues in Glasgow and Edinburgh. Find independent music venues hosting DIY events, live music, and community gatherings.">
+    <meta name="twitter:image" content="https://communalleisure.com/img/rabbit.png">
+}
+
+<h1>@Model.Name</h1>
 
 <div class="event-page">
     @foreach (var city in venues)

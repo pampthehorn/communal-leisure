@@ -150,6 +150,7 @@ public class EventsController : RenderController
                             endDate = child.EndDate,
                             acts = child.Acts ?? "",
                             venue = child.Venues != null ? child.Venues.First().Name + ", " + child.Venues.First().Value("address") + ", " + child.Venues.First().Value("city") + ", " + child.Venues.First().Value("postcode") : child.Venue ?? "",
+                            venueUrl = child.Venues?.FirstOrDefault()?.Url() ?? "",
                             city = child.Venues != null ? child.Venues.First().Value<string>("city") ?? "" : "",
                             description = child.Description ?? "",
                             link = child.Link ?? "",

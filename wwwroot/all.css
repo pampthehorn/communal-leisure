@@ -45,7 +45,7 @@ form#filters {
     margin:0px;
 }
 
-h5 span:hover {
+.event-date span:hover {
     cursor: pointer;
 }
 
@@ -86,13 +86,13 @@ body {
     word-wrap: break-word;
 }
 
-.event h5, .event h2, .event p {
+.event .event-date, .event h3, .event p {
 border-bottom: 1px dashed red;
 margin-bottom:2px;
 padding-bottom:2px;
 }
 
-.event-page h5, .event-page h2, .event-page p {
+.event-page .event-date, .event-page h3, .event-page p {
     border-bottom: 1px dashed red;
     margin-bottom: 5px;
     padding-bottom:5px;
@@ -120,11 +120,11 @@ text-align: center;
         display: none;
     }
 
-    li.event-text-item h2 {
+    li.event-text-item h3 {
         font-size:inherit;
     }
 
-    li.event-text-item h5 {
+    li.event-text-item .event-date {
         font-size: inherit;
     }
 
@@ -217,12 +217,12 @@ li.event-text-item {
         min-width: 0;
     }
 
-    li.event-text-item h2 {
-        font-size: 1.2rem; 
+    li.event-text-item h3 {
+        font-size: 1.2rem;
         margin: 5px 0;
     }
 
-    li.event-text-item h5 {
+    li.event-text-item .event-date {
         font-size: 0.9rem;
         color: #555;
         margin: 0;

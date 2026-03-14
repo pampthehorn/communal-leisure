@@ -27,17 +27,22 @@
 
       @await RenderSectionAsync("Head", required: false)
 
-    <meta property="og:title" content="Communal Leisure">
-    <meta property="og:description" content="Glasgow/Edinburgh DIY Event Listings">
-    <meta property="og:image" content="https://communalleisure.com/img/rabbit.png">
-    <meta property="og:url" content="https://communalleisure.com">
-    <meta property="og:type" content="website">
+    @if (!IsSectionDefined("Head"))
+    {
+        <title>Communal Leisure — Gig Listings Glasgow & Edinburgh</title>
+        <link rel="canonical" href="@Umbraco.AssignedContentItem.Url(mode: UrlMode.Absolute)" />
+        <meta name="description" content="Independent gig listings for Glasgow and Edinburgh. DIY music events, art shows, free and cheap nights out from independent promoters.">
+        <meta property="og:title" content="Communal Leisure — Gig Listings Glasgow & Edinburgh">
+        <meta property="og:description" content="Independent gig listings for Glasgow and Edinburgh. DIY music events, art shows, free and cheap nights out from independent promoters.">
+        <meta property="og:image" content="https://communalleisure.com/img/rabbit.png">
+        <meta property="og:url" content="@Umbraco.AssignedContentItem.Url(mode: UrlMode.Absolute)">
+        <meta property="og:type" content="website">
 
-    <!-- Twitter Card Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Communal Leisure">
-    <meta name="twitter:description" content="Glasgow/Edinburgh DIY Event Listings">
-    <meta name="twitter:image" content="https://communalleisure.com/img/rabbit.png">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="Communal Leisure — Gig Listings Glasgow & Edinburgh">
+        <meta name="twitter:description" content="Independent gig listings for Glasgow and Edinburgh. DIY music events, art shows, free and cheap nights out from independent promoters.">
+        <meta name="twitter:image" content="https://communalleisure.com/img/rabbit.png">
+    }
 
 </head>
 
@@ -51,8 +56,8 @@
         <a href="/"><img src="/img/rabbit.png" alt="Communal Leisure rabbit illustration by Oliver Pitt" /></a>
       @if(Umbraco.AssignedContentItem.IsDocumentType("events")){
         <h1>Communal Leisure</h1>
-  
-        <p>Glasgow/Edinburgh DIY Event Listings</p>
+
+        <p>Independent gig listings for Glasgow and Edinburgh</p>
         }
     </header>
 
@@ -105,7 +110,7 @@
         </div>
 
         <p><a href="/zines/index.html">Communal Leisure zine archive</a></p>
-        <a href="https://github.com/pampthehorn/communal-leisure/" target="_blank"><img src="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png" style="width:50px" /></a>
+        <a href="https://github.com/pampthehorn/communal-leisure/" target="_blank"><img src="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png" style="width:50px" alt="Communal Leisure on GitHub" /></a>
 
         </div>
         }
@@ -113,7 +118,7 @@
     </footer>
 
 
-    <script src="/script.js"></script>
+    <script src="/script.js" defer></script>
     <script type="module" src="/all.js"></script>
     <script type="module" src="/calendar.js"></script>
 

@@ -1,61 +1,123 @@
-﻿@using Umbraco.Cms.Core.Security
+@using Umbraco.Cms.Core.Security
 @using Umbraco.Cms.Core.Services
 @using Umbraco.Cms.Web.Common.PublishedModels;
 @inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.Venue>
 @using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
 @using website
+@using System.Text.Encodings.Web
 @inject IPublishedValueFallback _publishedValueFallback;
 
 @{
     Layout = "_Layout.cshtml";
 
-
     var eventsRoot = Umbraco.Content(1059);
 
-    var venueEvents = Enumerable.Empty<ContentModels.Event>();
+    var allVenueEvents = Enumerable.Empty<ContentModels.Event>();
 
     if (eventsRoot != null)
     {
-
-        venueEvents = eventsRoot.Children<ContentModels.Event>()
-                            .Where(e => e.Venues != null && e.Venues.Any(v => v.Id == Model.Id))
-                            .OrderByDescending(e => e.StartDate);
+        allVenueEvents = eventsRoot.Children<ContentModels.Event>()
+                            .Where(e => e.Venues != null && e.Venues.Any(v => v.Id == Model.Id));
     }
 
+    var now = DateTime.Now.AddHours(-1);
+    var upcomingEvents = allVenueEvents.Where(e => e.EndDate >= now).OrderBy(e => e.StartDate).ToList();
+    var pastEvents = allVenueEvents.Where(e => e.EndDate < now).OrderByDescending(e => e.StartDate).ToList();
+
     var dateFormat = "ddd d MMM HH:mm";
+    var venueDescription = $"Upcoming gig listings and events at {Model.Name}, {Model.City}. Independent DIY event listings from Communal Leisure.";
+}
+
+@section Head {
+    <title>@Model.Name, @Model.City — Gig Listings | Communal Leisure</title>
+    <link rel="canonical" href="@Model.Url(mode: UrlMode.Absolute)" />
+    <meta name="description" content="@venueDescription">
+    <meta property="og:title" content="@Model.Name — Gig Listings | Communal Leisure">
+    <meta property="og:description" content="@venueDescription">
+    <meta property="og:image" content="https://communalleisure.com/img/rabbit.png">
+    <meta property="og:url" content="@Model.Url(mode: UrlMode.Absolute)">
+    <meta property="og:type" content="website">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@Model.Name — Gig Listings | Communal Leisure">
+    <meta name="twitter:description" content="@venueDescription">
+    <meta name="twitter:image" content="https://communalleisure.com/img/rabbit.png">
+
+    <script type="application/ld+json">
+        {
+          "@@context": "https://schema.org",
+          "@@type": "MusicVenue",
+          "name": "@JavaScriptEncoder.Default.Encode(Model.Name)",
+          "address": {
+            "@@type": "PostalAddress",
+            "streetAddress": "@JavaScriptEncoder.Default.Encode(Model.Value<string>("address") ?? "")",
+            "addressLocality": "@JavaScriptEncoder.Default.Encode(Model.City ?? "")",
+            "postalCode": "@JavaScriptEncoder.Default.Encode(Model.Postcode ?? "")",
+            "addressCountry": "GB"
+          }
+          @if (!Model.Website.IsNullOrWhiteSpace())
+          {
+              <text>,"url": "@JavaScriptEncoder.Default.Encode(Model.Website)"</text>
+          }
+        }
+    </script>
 }
 
 <a href="@Model.Parent.Url()"> < all Venues</a>
 
-<h2>@Model.Name</h2>
+<h1>@Model.Name</h1>
 <p>@Model.Value("address")</p>
 <p>@Model.Postcode, @Model.City</p>
 @if (!Model.Website.IsNullOrWhiteSpace())
 {
-<a href="@Model.Website">@Model.Website</a>    
-}
+<a href="@Model.Website">@Model.Website</a>
+}
 
 @Model.Info
 
-<h3>Events at @Model.Name</h3>
+<h3>Upcoming events at @Model.Name</h3>
 
-<div class="event-page">
-    @if (venueEvents.Any())
-    {
-        <ul>
-            @foreach (var e in venueEvents)
-            {
-                var startDate = e.StartDate.ToUniversalTime();
-                var endDate = e.EndDate.ToUniversalTime();
-                string displayDate = $"{startDate.ToString(dateFormat)} - {(startDate.Date != endDate.Date ? endDate.ToString(dateFormat) : endDate.ToString("HH:mm"))} {endDate.Year}";
+@if (upcomingEvents.Any())
+{
+    <ul class="listing grid-view">
+        @foreach (var e in upcomingEvents)
+        {
+            var startDate = e.StartDate.ToUniversalTime();
+            var endDate = e.EndDate.ToUniversalTime();
+            string displayDate = $"{startDate.ToString(dateFormat)} - {(startDate.Date != endDate.Date ? endDate.ToString(dateFormat) : endDate.ToString("HH:mm"))}";
+            var posterUrl = e.Poster != null ? e.Poster.Url() : "/images/placeholder.jpg";
 
-                <li><a href="@e.Url()">@displayDate</a> @e.Acts | @e.Description</li>
-            }
-        </ul>
-    }
-    else
-    {
-        <p>No events found for this venue.</p>
-    }
+            <li class="event">
+                <a href="@e.Url()">
+                    <img src="@($"{posterUrl}?width=400&quality=80")" alt="@e.Acts" />
+                </a>
+                <p class="event-date">
+                    <span title="add to calendar">📅</span>
+                    <time>@displayDate</time>
+                </p>
+                <h3>@e.Acts</h3>
+                <p>@e.Description</p>
+                <a href="@e.Link" target="_blank">@e.Link</a>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>No upcoming events.</p>
+}
 
-</div>
+@if (pastEvents.Any())
+{
+    <h3>Previous events at @Model.Name</h3>
+    <ul>
+        @foreach (var e in pastEvents)
+        {
+            var startDate = e.StartDate.ToUniversalTime();
+            var endDate = e.EndDate.ToUniversalTime();
+            string displayDate = $"{startDate.ToString(dateFormat)} - {(startDate.Date != endDate.Date ? endDate.ToString(dateFormat) : endDate.ToString("HH:mm"))} {endDate.Year}";
+
+            <li><a href="@e.Url()">@displayDate</a> @e.Acts | @e.Description</li>
+        }
+    </ul>
+}

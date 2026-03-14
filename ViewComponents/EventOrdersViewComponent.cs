@@ -5,6 +5,7 @@
     using global::website.Models.ViewModels;
     using Microsoft.AspNetCore.Mvc;
     using Umbraco.Cms.Core.Logging;
+    using Umbraco.Cms.Core.Models.PublishedContent;
     using Umbraco.Cms.Infrastructure.Persistence;
     using Umbraco.Cms.Web.Common;
     using Umbraco.Cms.Web.Common.PublishedModels;
@@ -17,15 +18,18 @@
             private readonly IUmbracoDatabaseFactory _databaseFactory;
             private readonly ILogger<EventOrdersViewComponent> _logger;
             private readonly UmbracoHelper _umbracoHelper;
+            private readonly IPublishedValueFallback _publishedValueFallback;
 
             public EventOrdersViewComponent(
                 IUmbracoDatabaseFactory databaseFactory,
                 ILogger<EventOrdersViewComponent> logger,
-                UmbracoHelper umbracoHelper)
+                UmbracoHelper umbracoHelper,
+                IPublishedValueFallback publishedValueFallback)
             {
                 _databaseFactory = databaseFactory;
                 _logger = logger;
                 _umbracoHelper = umbracoHelper;
+                _publishedValueFallback = publishedValueFallback;
             }
 
             public async Task<IViewComponentResult> InvokeAsync(Guid eventNodeId)
@@ -55,27 +59,47 @@
 
                     var completedOrders = await db.FetchAsync<OrderModel>(query);
 
-                    if (!completedOrders.Any())
+                    var allTickets = new List<TicketModel>();
+
+                    if (completedOrders.Any())
                     {
-                        return View(viewModel);
+                        var completedOrderIds = completedOrders.Select(o => o.Id).ToList();
+
+                        var ticketsQuery = db.SqlContext.Sql("WHERE OrderId IN (@0) AND EventNodeId = @1", completedOrderIds, eventNodeId);
+
+                        allTickets = await db.FetchAsync<TicketModel>(ticketsQuery);
+
+                        var ticketsByOrderId = allTickets.GroupBy(t => t.OrderId)
+                                                         .ToDictionary(g => g.Key, g => g.AsEnumerable());
+
+                        foreach (var order in completedOrders)
+                        {
+                            viewModel.CompletedOrders.Add(new OrderVm
+                            {
+                                Order = order,
+                                Tickets = ticketsByOrderId.GetValueOrDefault(order.Id, new List<TicketModel>())
+                            });
+                        }
                     }
 
-                    var completedOrderIds = completedOrders.Select(o => o.Id).ToList();
+                    var soldByTicketId = allTickets.GroupBy(t => t.TicketId)
+                        .ToDictionary(g => g.Key, g => g.Sum(t => t.Quantity));
 
-                    var ticketsQuery = db.SqlContext.Sql("WHERE OrderId IN (@0) AND EventNodeId = @1", completedOrderIds, eventNodeId);
-
-                    var allTickets = await db.FetchAsync<TicketModel>(ticketsQuery);
-
-                    var ticketsByOrderId = allTickets.GroupBy(t => t.OrderId)
-                                                     .ToDictionary(g => g.Key, g => g.AsEnumerable());
-
-                    foreach (var order in completedOrders)
+                    if (eventNode.Tickets != null)
                     {
-                        viewModel.CompletedOrders.Add(new OrderVm
+                        foreach (var ticketElement in eventNode.Tickets)
                         {
-                            Order = order,
-                            Tickets = ticketsByOrderId.GetValueOrDefault(order.Id, new List<TicketModel>())
-                        });
+                            var ticket = new Ticket(ticketElement.Content, _publishedValueFallback);
+                            var ticketKey = ticketElement.Content.Key;
+                            soldByTicketId.TryGetValue(ticketKey, out int sold);
+
+                            viewModel.TicketAllocations.Add(new TicketAllocationSummary
+                            {
+                                Type = ticket.Type ?? "",
+                                Sold = sold,
+                                Allocation = ticket.Allocation
+                            });
+                        }
                     }
                 }
                 catch (Exception ex)

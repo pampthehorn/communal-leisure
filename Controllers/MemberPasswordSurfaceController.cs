@@ -62,10 +62,11 @@ namespace website.Controllers
                 if (resetPage != null)
                 {
                     var resetLink = resetPage.Url(mode: UrlMode.Absolute)
-                                    + $"?token={HttpUtility.UrlEncode(token)}&email={HttpUtility.UrlEncode(model.Email)}";
+                                    + $"?token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(model.Email)}";
 
                     var subject = "Password Reset Request";
-                    var body = $"<p>Please reset your password by clicking here: <a href='{resetLink}'>{resetLink}</a></p>";
+                    var htmlSafeLink = System.Net.WebUtility.HtmlEncode(resetLink);
+                    var body = $"<p>Please reset your password by clicking here: <a href=\"{htmlSafeLink}\">{htmlSafeLink}</a></p>";
 
                     await _emailService.SendEmailAsync(model.Email, subject, body);
                 }

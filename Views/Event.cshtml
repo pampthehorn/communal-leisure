@@ -48,6 +48,7 @@
 
 @section Head {
     <title>@Model.Name at @(venueNode != null ? venueNode.Name : Model.Venue) | Communal Leisure</title>
+    <link rel="canonical" href="@Model.Url(mode: UrlMode.Absolute)" />
     <meta name="description" content="@metaDescription">
 
     <meta property="og:title" content="@Model.Name">
@@ -98,7 +99,9 @@
           "description": "@JavaScriptEncoder.Default.Encode(fullDescription)",
           @if (Model.Tickets != null && Model.Tickets.Any())
           {
-                    var ticketList = Model.Tickets.ToList();
+                    var ticketList = Model.Tickets.Where(t => new Ticket(t.Content, _publishedValueFallback).Available).ToList();
+                    if (ticketList.Any())
+                    {
                     <text>
                     "offers": [
                         @for (int i = 0; i < ticketList.Count; i++)
@@ -117,6 +120,7 @@
                         }
                     ],
                     </text>
+                    }
           }
           "performer": [
             {
@@ -142,7 +146,7 @@
         @if (venueNode != null)
         {
             <p>
-                <strong>@venueNode.Name</strong><br />
+                <strong><a href="@venueNode.Url()">@venueNode.Name</a></strong><br />
                 @if (!string.IsNullOrWhiteSpace(venueNode.Address))
                 {
                     <span>@venueNode.Address<br /></span>
@@ -177,41 +181,55 @@
 
     @if (Model.Tickets != null && Model.Tickets.Any() && Model.Value<bool>("ticketsOnline"))
     {
-        @using (Html.BeginUmbracoForm<CheckoutController>(nameof(CheckoutController.SubmitTicketSelection), FormMethod.Post))
+        var allTickets = Model.Tickets.ToList();
+        var availableTickets = allTickets.Where(t => new Ticket(t.Content, _publishedValueFallback).Available).ToList();
+
+        if (availableTickets.Any())
         {
-            var ticketsList = Model.Tickets.ToList();
-            <h2>Tickets 🎟️</h2>
-            @for (int i = 0; i < ticketsList.Count; i++)
+            @using (Html.BeginUmbracoForm<CheckoutController>(nameof(CheckoutController.SubmitTicketSelection), FormMethod.Post))
             {
-                var ticketContent = ticketsList[i].Content;
-                var ticket = new Ticket(ticketContent, _publishedValueFallback);
+                <h2>Tickets 🎟️</h2>
+                @if (TempData["TicketError"] != null)
+                {
+                    <div class="alert alert-danger">@TempData["TicketError"]</div>
+                }
+                @if (Model.Value<bool>("showTicketCounter") || isMyEvent)
+                {
+                    @await Component.InvokeAsync("TicketCounter", new { eventNodeId = Model.Key })
+                }
+                @for (int i = 0; i < availableTickets.Count; i++)
+                {
+                    var ticketContent = availableTickets[i].Content;
+                    var ticket = new Ticket(ticketContent, _publishedValueFallback);
+                    int maxQty = ticket.Allocation > 0 ? Math.Min(20, ticket.Allocation) : 20;
 
-                <div class="mb-3">
-                    <h4>£@ticket.Cost.ToString("F2") - @ticket.Type</h4>
+                    <div class="mb-3">
+                        <h4>£@ticket.Cost.ToString("F2") - @ticket.Type</h4>
 
-                    <input type="hidden" name="Tickets[@i].TicketId" value="@ticketContent.Key" />
+                        <input type="hidden" name="Tickets[@i].TicketId" value="@ticketContent.Key" />
 
-                    <label for="ticket_quantity_@i" class="form-label">Quantity:</label>
-                    <input type="number" id="ticket_quantity_@i" name="Tickets[@i].Quantity" value="@(i == 0 ? 1 : 0)" min="0" max="20" step="1" class="form-control" style="max-width: 120px;">
+                        <label for="ticket_quantity_@i" class="form-label">Quantity:</label>
+                        <input type="number" id="ticket_quantity_@i" name="Tickets[@i].Quantity" value="@(i == 0 ? 1 : 0)" min="0" max="@maxQty" step="1" class="form-control" style="max-width: 120px;">
+                    </div>
+                }
+
+                <br />
+
+                <hr />
+                <div class="mb-3" style="max-width: 400px;">
+                    <label for="CustomerName" class="form-label">Full Name</label>
+                    <input type="text" id="CustomerName" name="CustomerName" class="form-control" required />
                 </div>
+                <br />
+                <div class="mb-3" style="max-width: 400px;">
+                    <label for="CustomerEmail" class="form-label">Email Address</label>
+                    <input type="email" id="CustomerEmail" name="CustomerEmail" class="form-control" required />
+                </div>
+
+                <input type="hidden" name="EventNodeId" value="@Model.Key" />
+                <br />
+                <button type="submit" class="btn btn-primary btn-lg mt-3">Buy Tickets</button>
             }
-
-            <br />
-
-            <hr />
-            <div class="mb-3" style="max-width: 400px;">
-                <label for="CustomerName" class="form-label">Full Name</label>
-                <input type="text" id="CustomerName" name="CustomerName" class="form-control" required />
-            </div>
-            <br />
-            <div class="mb-3" style="max-width: 400px;">
-                <label for="CustomerEmail" class="form-label">Email Address</label>
-                <input type="email" id="CustomerEmail" name="CustomerEmail" class="form-control" required />
-            </div>
-
-            <input type="hidden" name="EventNodeId" value="@Model.Key" />
-            <br />
-            <button type="submit" class="btn btn-primary btn-lg mt-3">Buy Tickets</button>
         }
     }
 

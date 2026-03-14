@@ -9,4 +9,12 @@ public class EventOrdersViewModel
 {
     public List<OrderVm> CompletedOrders { get; set; } = new List<OrderVm>();
     public string EventName { get; set; } = string.Empty;
+    public List<TicketAllocationSummary> TicketAllocations { get; set; } = new List<TicketAllocationSummary>();
+}
+
+public class TicketAllocationSummary
+{
+    public string Type { get; set; } = string.Empty;
+    public int Sold { get; set; }
+    public int Allocation { get; set; }
 }

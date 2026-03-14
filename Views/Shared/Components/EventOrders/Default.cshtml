@@ -4,6 +4,25 @@
 <div class="event-attendee-list" style="margin-top: 40px;">
     <h2>Attendee List 📋</h2>
     <p>All completed ticket sales for <strong>@Model.EventName</strong>.</p>
+
+    @if (Model.TicketAllocations.Any())
+    {
+        <h3>Ticket Allocation</h3>
+        <ul style="list-style: none; padding: 0;">
+            @foreach (var ta in Model.TicketAllocations)
+            {
+                <li style="margin-bottom: 6px;">
+                    <strong>@ta.Type:</strong>
+                    @ta.Sold@(ta.Allocation > 0 ? $"/{ta.Allocation}" : "")
+                    sold
+                    @if (ta.Allocation > 0 && ta.Sold >= ta.Allocation)
+                    {
+                        <span style="color: red; font-weight: bold;">(SOLD OUT)</span>
+                    }
+                </li>
+            }
+        </ul>
+    }
     <hr />
 
     @if (!Model.CompletedOrders.Any())

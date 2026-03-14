@@ -1,0 +1,12 @@
+{
+  "name": "CustomBackoffice",
+  "version": "1.0.0",
+  "extensions": [
+    {
+      "type": "backofficeEntryPoint",
+      "alias": "CustomBackoffice.RemoveDashboards",
+      "name": "Remove Welcome Dashboards",
+      "js": "/App_Plugins/CustomBackoffice/remove-dashboards.js"
+    }
+  ]
+}

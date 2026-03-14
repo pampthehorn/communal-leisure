@@ -1,0 +1,19 @@
+@using website.Models
+@model List<TicketAllocationSummary>
+
+@if (Model.Any())
+{
+    <div style="margin-top: 10px; margin-bottom: 10px;">
+        @foreach (var ta in Model)
+        {
+            <p style="margin: 4px 0;">
+                <strong>@ta.Type:</strong>
+                @ta.Sold@(ta.Allocation > 0 ? $"/{ta.Allocation}" : "") sold
+                @if (ta.Allocation > 0 && ta.Sold >= ta.Allocation)
+                {
+                    <span style="color: red; font-weight: bold;">(SOLD OUT)</span>
+                }
+            </p>
+        }
+    </div>
+}

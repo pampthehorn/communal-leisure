@@ -1,5 +1,5 @@
-﻿@using website.Models
-@model List<EventItem>
+@using website.Models
+@model WeeklyEmailViewModel
 @{
     Layout = null;
     var dateFormat = "ddd d MMM HH:mm";
@@ -9,7 +9,6 @@
 <html>
 <head>
     <style>
-        /* Email clients need inline styles, but simple CSS often works */
         body {
             font-family: Arial, sans-serif;
             line-height: 1.6;
@@ -31,6 +30,13 @@
             font-size: 18px;
         }
 
+        h3 {
+            margin: 30px 0 10px 0;
+            font-size: 20px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+        }
+
         a {
             color: #000;
             text-decoration: underline;
@@ -39,26 +45,22 @@
 </head>
 <body>
 
-    @if (Model != null && Model.Count > 0)
+    @if (Model.UpcomingEvents.Any())
     {
+        <h3>Events this week</h3>
         <ul>
-            @foreach (var e in Model)
+            @foreach (var e in Model.UpcomingEvents)
             {
                 var startDate = e.startDate.ToUniversalTime();
                 var endDate = e.endDate.ToUniversalTime();
                 string displayDate = $"{startDate.ToString(dateFormat)} - {(startDate.Date != endDate.Date ? endDate.ToString(dateFormat) : endDate.ToString("HH:mm"))}";
 
                 <li class="event-item">
-                    @* Note: Images in emails must be absolute URLs (https://yoursite.com/media/...) *@
                     <div class="event-details">
                         <p class="event-date">📅 @displayDate</p>
                         <h2><a href="@e.url">@e.name</a></h2>
                         <p>@e.description</p>
                         <p><strong>Venue:</strong> @e.venue</p>
-                      @*   @if (!string.IsNullOrEmpty(e.link))
-                        {
-                            <a href="@e.link">More Info</a>
-                        } *@
                     </div>
                 </li>
             }
@@ -66,7 +68,29 @@
     }
     else
     {
-        <p>No events found for the next two weeks.</p>
+        <p>No events coming up this week.</p>
+    }
+
+    @if (Model.RecentlyAddedEvents.Any())
+    {
+        <h3>Events added to the site last week</h3>
+        <ul>
+            @foreach (var e in Model.RecentlyAddedEvents)
+            {
+                var startDate = e.startDate.ToUniversalTime();
+                var endDate = e.endDate.ToUniversalTime();
+                string displayDate = $"{startDate.ToString(dateFormat)} - {(startDate.Date != endDate.Date ? endDate.ToString(dateFormat) : endDate.ToString("HH:mm"))}";
+
+                <li class="event-item">
+                    <div class="event-details">
+                        <p class="event-date">📅 @displayDate</p>
+                        <h2><a href="@e.url">@e.name</a></h2>
+                        <p>@e.description</p>
+                        <p><strong>Venue:</strong> @e.venue</p>
+                    </div>
+                </li>
+            }
+        </ul>
     }
 
     <p><a href="https://communalleisure.com">communalleisure.com</a></p>

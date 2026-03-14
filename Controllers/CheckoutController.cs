@@ -69,12 +69,41 @@ public class CheckoutController : SurfaceController
         var orderTickets = new List<TicketModel>();
         long totalCostCents = 0;
 
+        using var validationDb = _databaseFactory.CreateDatabase();
+
         foreach (var selectedTicket in selectedTickets)
         {
             var ticketContent = eventNode.Tickets?.FirstOrDefault(t => t.Content.Key == selectedTicket.TicketId)?.Content;
             if (ticketContent == null) continue;
 
             var ticket = new Ticket(ticketContent, _publishedValueFallback);
+
+            if (!ticket.Available)
+            {
+                TempData["TicketError"] = $"'{ticket.Type}' tickets are not currently available.";
+                return RedirectToUmbracoPage(model.EventNodeId);
+            }
+
+            if (ticket.Allocation > 0)
+            {
+                var soldQuery = validationDb.SqlContext.Sql(@"
+                    SELECT COALESCE(SUM(T.Quantity), 0) FROM Ticket T
+                    JOIN Orders O ON T.OrderId = O.Id
+                    WHERE T.TicketId = @0 AND T.EventNodeId = @1 AND O.Status = 'Completed'",
+                    selectedTicket.TicketId, model.EventNodeId);
+
+                var sold = await validationDb.ExecuteScalarAsync<int>(soldQuery);
+                var remaining = ticket.Allocation - sold;
+
+                if (selectedTicket.Quantity > remaining)
+                {
+                    TempData["TicketError"] = remaining <= 0
+                        ? $"'{ticket.Type}' tickets are sold out."
+                        : $"Only {remaining} '{ticket.Type}' ticket(s) remaining.";
+                    return RedirectToUmbracoPage(model.EventNodeId);
+                }
+            }
+
             int itemCost = (int)(ticket.Cost * 100);
             totalCostCents += (itemCost * selectedTicket.Quantity);
 

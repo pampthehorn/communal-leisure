@@ -17,13 +17,13 @@
             <a href="@e.url">
                 <img src="@($"{e.poster.Url}?width=400&quality=80")" alt="@e.name" />
             </a>
-            <h5>
+            <p class="event-date">
                 <span title="add to calendar">📅</span>
                 <time>@displayDate</time>
-            </h5>
-            <h2>@e.name</h2>
+            </p>
+            <h3>@e.name</h3>
             <p>@e.description</p>
-            <p>@e.venue</p>
+            <p>@if (!string.IsNullOrEmpty(e.venueUrl)) { <a href="@e.venueUrl">@e.venue</a> } else { @e.venue }</p>
             <a href="@e.link" target="_blank">@e.link</a>
         </li>
     }

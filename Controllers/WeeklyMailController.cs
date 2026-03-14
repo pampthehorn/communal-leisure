@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Web.Common;
@@ -17,6 +18,7 @@ namespace website.Controllers
         private readonly IConfiguration _config;
         private readonly ILogger<WeeklyMailController> _logger;
         private readonly UmbracoHelper _helper;
+        private readonly IWebHostEnvironment _env;
 
         public WeeklyMailController(
             IMemberService memberService,
@@ -25,7 +27,8 @@ namespace website.Controllers
             IPublishedValueFallback fallback,
             IConfiguration config,
             ILogger<WeeklyMailController> logger,
-            UmbracoHelper helper)
+            UmbracoHelper helper,
+            IWebHostEnvironment env)
         {
             _memberService = memberService;
             _emailService = emailService;
@@ -34,11 +37,17 @@ namespace website.Controllers
             _config = config;
             _logger = logger;
             _helper = helper;
+            _env = env;
         }
 
         [HttpGet]
         public async Task<IActionResult> Send(string key)
         {
+
+            if (!_env.IsProduction())
+            {
+                return BadRequest("Weekly mail can only be sent from the production environment.");
+            }
 
             var configKey = _config["WeeklyMailSecret"];
             if (string.IsNullOrEmpty(key) || key != configKey)
@@ -51,11 +60,17 @@ namespace website.Controllers
                 var parentNode = _helper.Content(1059);
                 if (parentNode == null) return NotFound("Event container not found");
 
-                var twoWeeksFromNow = DateTime.Now.AddDays(14);
+                var today = DateTime.Now.Date;
+                var sevenDaysFromNow = today.AddDays(7);
+                var oneWeekAgo = today.AddDays(-7);
 
-                var events = parentNode.Children()
+                var allEvents = parentNode.Children()
                     .Select(m => new Event(m, _fallback))
-                    .Where(m => m.EndDate >= DateTime.Now && m.StartDate <= twoWeeksFromNow && !m.Hide)
+                    .Where(m => !m.Hide)
+                    .ToList();
+
+                var upcomingEvents = allEvents
+                    .Where(m => m.EndDate >= today && m.StartDate < sevenDaysFromNow)
                     .OrderBy(m => m.StartDate)
                     .Select(child => new EventItem
                     {
@@ -69,12 +84,32 @@ namespace website.Controllers
                     })
                     .ToList();
 
-                if (events == null || !events.Any()) {
+                var recentlyAddedEvents = allEvents
+                    .Where(m => m.CreateDate >= oneWeekAgo)
+                    .OrderByDescending(m => m.CreateDate)
+                    .Select(child => new EventItem
+                    {
+                        name = child.Acts ?? "",
+                        startDate = child.StartDate,
+                        endDate = child.EndDate,
+                        description = child.Description ?? "",
+                        venue = child.Venue ?? "",
+                        url = child.Url(mode: UrlMode.Absolute) ?? "",
+                        link = child.Link ?? ""
+                    })
+                    .ToList();
+
+                var model = new WeeklyEmailViewModel
+                {
+                    UpcomingEvents = upcomingEvents,
+                    RecentlyAddedEvents = recentlyAddedEvents
+                };
+
+                if (!upcomingEvents.Any() && !recentlyAddedEvents.Any()) {
                     return StatusCode(500, "no events");
                 }
 
-
-                var emailHtml = await _viewRenderer.RenderViewToStringAsync("~/Views/Emails/WeeklyEvents.cshtml", events);
+                var emailHtml = await _viewRenderer.RenderViewToStringAsync("~/Views/Emails/WeeklyEvents.cshtml", model);
 
                 long totalRecords;
                 var members = _memberService.GetAll(0, int.MaxValue, out totalRecords);
@@ -84,9 +119,6 @@ namespace website.Controllers
                     .Select(x => x.Email)
                     .Distinct()
                     .ToList();
-
-
-                recipients = new Events(parentNode,_fallback).NotifyEmails?.ToList() ?? new List<string>();
 
 
                 _logger.LogInformation($"Starting Weekly Mailout to {recipients.Count} members.");
