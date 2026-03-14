@@ -102,10 +102,14 @@ namespace website.Controllers
                 var token = await _memberManager.GenerateEmailConfirmationTokenAsync(identityUser);
 
                 var registerPage = _umbracoHelper.ContentAtRoot()
-                    .DescendantsOrSelfOfType("registerPage")
+                    .DescendantsOrSelfOfType("register")
                     .FirstOrDefault();
 
-                if (registerPage != null)
+                if (registerPage == null)
+                {
+                    _logger.LogWarning("Could not find register page content node — verification email not sent for {Email}", model.Email);
+                }
+                else
                 {
                     var verifyLink = registerPage.Url(mode: UrlMode.Absolute)
                         + $"?verify=true&token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(model.Email)}";

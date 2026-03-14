@@ -7,6 +7,7 @@ namespace website.Models
         public string name { get; set; } = string.Empty;
         public string acts { get; set; } = string.Empty;
         public string venue { get; set; } = string.Empty;
+        public string venueAddress { get; set; } = string.Empty;
         public string venueUrl { get; set; } = string.Empty;
         public string city { get; set; } = string.Empty;
         public string description { get; set; } = string.Empty;

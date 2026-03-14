@@ -31,7 +31,7 @@
                 </p>
                 <h3><a href="@e.url">@e.name</a></h3>
                 <p>@e.description</p>
-                <p>@if (!string.IsNullOrEmpty(e.venueUrl)) { <a href="@e.venueUrl">@e.venue</a> } else { @e.venue }</p>
+                <p>@if (!string.IsNullOrEmpty(e.venueUrl)) { <a href="@e.venueUrl">@e.venue</a> } else { @e.venue } @if (!string.IsNullOrEmpty(e.venueAddress)) { <span>@e.venueAddress</span> }</p>
                 <a href="@e.link" target="_blank">@e.link</a>
             </div>
         </li>

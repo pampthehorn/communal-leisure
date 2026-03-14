@@ -1,4 +1,4 @@
-@using website.Controllers
+﻿@using website.Controllers
 @using website.Models.ViewModels
 @inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
 
@@ -65,7 +65,7 @@ else
 
         <div class="form-group">
             @Html.Label("Name", "Name")
-            @Html.TextBox("Name", null, new { @class = "form-control", required = "required" })
+            @Html.TextBox("Name", "", new { @class = "form-control", required = "required" })
             @Html.ValidationMessage("Name", "", new { @class = "text-danger" })
         </div>
 

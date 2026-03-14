@@ -143,6 +143,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Composers\" />
     <Folder Include="wwwroot\rules\" />
   </ItemGroup>
 

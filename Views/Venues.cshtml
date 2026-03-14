@@ -38,7 +38,7 @@
     <h3>@city.Key</h3>    <ul>        @foreach(var venue in city.OrderBy(m=>m.Name.Replace("The ","")))
         {
             <li>
-           <a href="@venue.Url()">@venue.Name @venue.Postcode</a>
+           <a href="@venue.Url()">@venue.Name</a> @venue.Postcode
             </li>
         }
         </ul>

@@ -17,7 +17,7 @@ using website.Services;
 
 namespace website.Controllers
 {
-    public class RegisterPageController : RenderController
+    public class RegisterController : RenderController
     {
         private readonly MemberPasswordConfigurationSettings _pwSettings;
         private readonly IMemberManager _memberManager;
@@ -26,10 +26,10 @@ namespace website.Controllers
         private readonly IRazorViewToStringRenderer _viewRenderer;
         private readonly UmbracoHelper _umbracoHelper;
         private readonly IPublishedValueFallback _ipvfb;
-        private readonly ILogger<RegisterPageController> _logger;
+        private readonly ILogger<RegisterController> _logger;
 
-        public RegisterPageController(
-            ILogger<RegisterPageController> logger,
+        public RegisterController(
+            ILogger<RegisterController> logger,
             ICompositeViewEngine compositeViewEngine,
             IUmbracoContextAccessor umbracoContextAccessor,
             IOptions<MemberPasswordConfigurationSettings> pwSettings,
