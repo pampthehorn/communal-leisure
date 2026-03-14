@@ -18,11 +18,11 @@ public class YourOrderController : RenderController
         ILogger<RenderController> logger,
         ICompositeViewEngine compositeViewEngine,
         IUmbracoContextAccessor umbracoContextAccessor,
-        IPublishedValueFallback publihsedValueFallback,
+        IPublishedValueFallback publishedValueFallback,
         IOrderProcessingService orderProcessingService)
         : base(logger, compositeViewEngine, umbracoContextAccessor)
     {
- 
+        _publishedValueFallback = publishedValueFallback;
         _orderProcessingService = orderProcessingService;
     }
 
@@ -30,9 +30,9 @@ public class YourOrderController : RenderController
     public sealed override IActionResult Index() => throw new NotImplementedException();
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
-        var viewModel = new YourOrderViewModel(CurrentPage as YourOrder, _publishedValueFallback);
+        var viewModel = new YourOrderViewModel(CurrentPage!, _publishedValueFallback);
 
-        string paymentIntentId = HttpContext.Request.Query["payment_intent"];
+        string? paymentIntentId = HttpContext.Request.Query["payment_intent"];
 
         if (!string.IsNullOrEmpty(paymentIntentId))
         {

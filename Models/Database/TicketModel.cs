@@ -13,8 +13,8 @@ namespace website.Models.Database
         public Guid EventNodeId { get; set; }
         public Guid TicketId { get; set; }
         public int Quantity { get; set; }
-        public string Type { get; set; }
-        public string EventName { get; set; }
+        public string Type { get; set; } = string.Empty;
+        public string EventName { get; set; } = string.Empty;
         public int Cost { get; set; }
         public int OrderId { get; set; }
 

@@ -8,5 +8,5 @@ namespace website.Models;
 public class EventOrdersViewModel
 {
     public List<OrderVm> CompletedOrders { get; set; } = new List<OrderVm>();
-    public string EventName { get; set; }
+    public string EventName { get; set; } = string.Empty;
 }

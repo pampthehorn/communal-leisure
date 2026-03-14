@@ -9,7 +9,7 @@ public class EventsViewModel : Events
     }
 
     public List<EventItem> Events { get; set; } = new List<EventItem>();
-    public List<string> Tags { get; set; } = new List<string>();
+    public new List<string> Tags { get; set; } = new List<string>();
     public List<string> Cities { get; set; } = new List<string>();
 
     public string SelectedTag { get; set; } = "everything";

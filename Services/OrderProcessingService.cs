@@ -65,14 +65,14 @@ namespace website.Services
                 return await FulfillOrderAsync(db, order, tickets);
             }
 
-            string stripeSecretKey = null;
+            string? stripeSecretKey = null;
             var firstTicket = tickets.FirstOrDefault();
             if (firstTicket != null)
             {
                 var eventPage = _umbracoHelper.Content(firstTicket.EventNodeId) as Event;
                 if (eventPage?.Organizer != null && !string.IsNullOrWhiteSpace(eventPage.Organizer.Value<string>("stripeSecretKey")))
                 {
-                    stripeSecretKey = eventPage.Organizer.Value<string>("stripeSecretKey");
+                    stripeSecretKey = eventPage.Organizer.Value<string>("stripeSecretKey") ?? "";
                 }
             }
 

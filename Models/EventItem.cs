@@ -1,28 +1,28 @@
-﻿namespace website.Models
+namespace website.Models
 {
 
 
     public class EventItem
     {
-        public string name { get; set; }
-        public string acts { get; set; }
-        public string venue { get; set; }
-        public string city { get; set; }
-        public string description { get; set; }
-        public string link { get; set; }
-        public string organizer { get; set; }
-        public string status { get; set; }
-        public Poster poster { get; set; }
-        public string tags { get; set; }
+        public string name { get; set; } = string.Empty;
+        public string acts { get; set; } = string.Empty;
+        public string venue { get; set; } = string.Empty;
+        public string city { get; set; } = string.Empty;
+        public string description { get; set; } = string.Empty;
+        public string link { get; set; } = string.Empty;
+        public string organizer { get; set; } = string.Empty;
+        public string status { get; set; } = string.Empty;
+        public Poster poster { get; set; } = new Poster();
+        public string tags { get; set; } = string.Empty;
         public DateTime startDate { get; set; }
         public DateTime endDate { get; set; }
-        public string url { get; set; }
+        public string url { get; set; } = string.Empty;
 
     }
 
     public class Poster
     {
-        public string name { get; set; }
-        public string Url { get; set; }
+        public string name { get; set; } = string.Empty;
+        public string Url { get; set; } = string.Empty;
     }
 }

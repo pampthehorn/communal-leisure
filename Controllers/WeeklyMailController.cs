@@ -1,17 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Umbraco.Cms.Core.Models.PublishedContent;
-using Umbraco.Cms.Core.PublishedCache;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Web.Common;
-using Umbraco.Cms.Web.Common.Controllers;
 using Umbraco.Cms.Web.Common.PublishedModels;
-using Umbraco.Cms.Web.Common.UmbracoContext;
 using website.Models;
 using website.Services;
 
 namespace website.Controllers
 {
-    public class WeeklyMailController : UmbracoApiController
+    public class WeeklyMailController : Controller
     {
         private readonly IMemberService _memberService;
         private readonly IEmailService _emailService;
@@ -42,7 +39,7 @@ namespace website.Controllers
         [HttpGet]
         public async Task<IActionResult> Send(string key)
         {
-      
+
             var configKey = _config["WeeklyMailSecret"];
             if (string.IsNullOrEmpty(key) || key != configKey)
             {
@@ -62,13 +59,13 @@ namespace website.Controllers
                     .OrderBy(m => m.StartDate)
                     .Select(child => new EventItem
                     {
-                        name = child.Acts,
+                        name = child.Acts ?? "",
                         startDate = child.StartDate,
                         endDate = child.EndDate,
-                        description = child.Description,
-                        venue = child.Venue,
-                        url = child.Url(mode: UrlMode.Absolute),
-                        link = child.Link
+                        description = child.Description ?? "",
+                        venue = child.Venue ?? "",
+                        url = child.Url(mode: UrlMode.Absolute) ?? "",
+                        link = child.Link ?? ""
                     })
                     .ToList();
 
@@ -76,7 +73,7 @@ namespace website.Controllers
                     return StatusCode(500, "no events");
                 }
 
-            
+
                 var emailHtml = await _viewRenderer.RenderViewToStringAsync("~/Views/Emails/WeeklyEvents.cshtml", events);
 
                 long totalRecords;
@@ -89,7 +86,7 @@ namespace website.Controllers
                     .ToList();
 
 
-                recipients = new Events(parentNode,_fallback).NotifyEmails.ToList();
+                recipients = new Events(parentNode,_fallback).NotifyEmails?.ToList() ?? new List<string>();
 
 
                 _logger.LogInformation($"Starting Weekly Mailout to {recipients.Count} members.");
@@ -99,7 +96,7 @@ namespace website.Controllers
                 {
                     try
                     {
-        
+
                         await _emailService.SendEmailAsync(email, "Events this week", emailHtml);
                         sentCount++;
                     }

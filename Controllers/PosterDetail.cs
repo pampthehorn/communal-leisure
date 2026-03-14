@@ -1,4 +1,3 @@
-﻿using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.IO;
@@ -8,13 +7,11 @@ using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Strings;
-using Umbraco.Cms.Web.Common.Controllers;
-using Umbraco.Extensions;
 
 namespace website.Controllers
 {
 
-	public class PosterDetailController : UmbracoApiController
+	public class PosterDetailController : Controller
 	{
 		private readonly Serilog.ILogger _logger;
 		private IConfiguration _config;
@@ -53,10 +50,4 @@ namespace website.Controllers
             return Ok(new { mediaId = media.Id });
         }
     }
-
-
-
-
-
-
 }

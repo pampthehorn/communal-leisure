@@ -50,7 +50,7 @@
             }
             var events = GetEventsForRss();
 
-            var feedUrl = CurrentPage.Url(mode: UrlMode.Absolute);
+            var feedUrl = CurrentPage!.Url(mode: UrlMode.Absolute);
 
             var feed = new SyndicationFeed(
                 "Communal Leisure",
@@ -143,22 +143,22 @@
                    
                     var simpleEvent = new EventItem
                     {
-                        name = child.Acts,
+                        name = child.Acts ?? "",
                         startDate = child.StartDate,
                         endDate = child.EndDate,
-                        acts = child.Acts,
+                        acts = child.Acts ?? "",
                         venue = child.Venues != null && child.Venues.Any()
                                 ? child.Venues.First().Name + ", " + child.Venues.First().Value("address") + ", " + child.Venues.First().Value("city") + ", " + child.Venues.First().Value("postcode")
-                                : child.Venue,
-                        city = child.Venues != null && child.Venues.Any() ? child.Venues.First().Value<string>("city") : "",
-                        description = child.Description,
-                        link = child.Link,
-                        status = child.Status,
+                                : child.Venue ?? "",
+                        city = child.Venues != null && child.Venues.Any() ? child.Venues.First().Value<string>("city") ?? "" : "",
+                        description = child.Description ?? "",
+                        link = child.Link ?? "",
+                        status = child.Status ?? "",
                         tags = child.Tags?.FirstOrDefault() != null ? child.Tags.Select(m => m.Name).Aggregate((a, b) => a + "," + b) : "",
                         poster = child.Poster != null
-                                ? new Poster() { Url = child.Poster.Url(mode: UrlMode.Absolute) }
-                                : new Poster() { Url = "" }, 
-                        url = child.Url(mode: UrlMode.Absolute)
+                                ? new Poster() { Url = child.Poster.Url(mode: UrlMode.Absolute) ?? "" }
+                                : new Poster() { Url = "" },
+                        url = child.Url(mode: UrlMode.Absolute) ?? ""
                     };
                     events.Add(simpleEvent);
                 }

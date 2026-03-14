@@ -12,9 +12,9 @@ namespace website.Models.Database
 
         public long TotalAmount { get; set; }
 
-        public string CustomerName { get; set; }
+        public string CustomerName { get; set; } = string.Empty;
 
-        public string CustomerEmail { get; set; }
+        public string CustomerEmail { get; set; } = string.Empty;
 
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 

@@ -4,13 +4,13 @@ using website.Models.Database;
 
 namespace website.Migrations;
 
-public class AddTicketSystemSchema : MigrationBase
+public class AddTicketSystemSchema : AsyncMigrationBase
 {
     public AddTicketSystemSchema(IMigrationContext context) : base(context)
     {
     }
 
-    protected override void Migrate()
+    protected override async Task MigrateAsync()
     {
         if (!TableExists("Orders"))
         {

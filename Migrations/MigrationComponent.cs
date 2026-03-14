@@ -1,4 +1,4 @@
-﻿using Umbraco.Cms.Core.Composing;
+using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.Migrations;
 using Umbraco.Cms.Core.Scoping;
 using Umbraco.Cms.Core.Services;
@@ -15,7 +15,7 @@ public class TicketSystemComposer : IComposer
     }
 }
 
-public class TicketSystemComponent : IComponent
+public class TicketSystemComponent : IAsyncComponent
 {
     private readonly ICoreScopeProvider _coreScopeProvider;
     private readonly IMigrationPlanExecutor _migrationPlanExecutor;
@@ -34,7 +34,7 @@ public class TicketSystemComponent : IComponent
         _runtimeState = runtimeState;
     }
 
-    public void Initialize()
+    public async Task InitializeAsync(bool isRestarting, CancellationToken cancellationToken)
     {
         if (_runtimeState.Level < Umbraco.Cms.Core.RuntimeLevel.Run)
         {
@@ -47,10 +47,11 @@ public class TicketSystemComponent : IComponent
             .To<AddTicketSystemSchema>("add-ticket-system-schema-initial3");
 
         var upgrader = new Upgrader(migrationPlan);
-        upgrader.Execute(_migrationPlanExecutor, _coreScopeProvider, _keyValueService);
+        await upgrader.ExecuteAsync(_migrationPlanExecutor, _coreScopeProvider, _keyValueService);
     }
 
-    public void Terminate()
+    public Task TerminateAsync(bool isRestarting, CancellationToken cancellationToken)
     {
+        return Task.CompletedTask;
     }
 }

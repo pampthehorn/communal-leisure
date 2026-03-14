@@ -27,7 +27,7 @@ public class EventsController : RenderController
         _ipvfb = ipvfb;
         _umbracoHelper = umbracoHelper;
         _config = config;
-        _pageSize = int.Parse(_config["eventsPageSize"]);
+        _pageSize = int.Parse(_config["eventsPageSize"] ?? "12");
     }
 
     public override IActionResult Index()
@@ -58,7 +58,7 @@ public class EventsController : RenderController
 
     private async Task<EventsViewModel> FetchAndProcessEvents(string selectedTag, string selectedCity, int pageNumber, string viewMode)
     {
-        var model = new EventsViewModel(CurrentPage, _ipvfb)
+        var model = new EventsViewModel(CurrentPage!, _ipvfb)
         {
             SelectedTag = selectedTag,
             SelectedCity = selectedCity,
@@ -126,9 +126,6 @@ public class EventsController : RenderController
         }
 
         return model;
-
-
-        return model;
     }
 
     public async Task<List<EventItem>> GetEvents()
@@ -137,39 +134,37 @@ public class EventsController : RenderController
        
             var events = new List<EventItem>();
             var parentNode = _umbracoHelper.Content(1059);
+            if (parentNode == null) return events;
             var children = parentNode.Children().Select(m => new Event(m, _ipvfb)).Where(m => m.EndDate >= DateTime.Now.AddHours(-1) && !m.Hide);
 
             var ukTimeZone = TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
 
-            if (parentNode != null)
-            {
-                foreach (var child in children)
+            foreach (var child in children)
                 {
                     try
                     {
                         var simpleEvent = new EventItem
                         {
-                            name = child.Acts,
+                            name = child.Acts ?? "",
                             startDate = child.StartDate,
                             endDate = child.EndDate,
-                            acts = child.Acts,
-                            venue = child.Venues != null ? child.Venues.First().Name + ", " + child.Venues.First().Value("address") + ", " + child.Venues.First().Value("city") + ", " + child.Venues.First().Value("postcode") : child.Venue,
-                            city = child.Venues != null ? child.Venues.First().Value<string>("city") : "",
-                            description = child.Description,
-                            link = child.Link,
-                            status = child.Status,
+                            acts = child.Acts ?? "",
+                            venue = child.Venues != null ? child.Venues.First().Name + ", " + child.Venues.First().Value("address") + ", " + child.Venues.First().Value("city") + ", " + child.Venues.First().Value("postcode") : child.Venue ?? "",
+                            city = child.Venues != null ? child.Venues.First().Value<string>("city") ?? "" : "",
+                            description = child.Description ?? "",
+                            link = child.Link ?? "",
+                            status = child.Status ?? "",
                             tags = child.Tags?.FirstOrDefault() != null ? child.Tags.Select(m => m.Name).Aggregate((a, b) => a + "," + b) : "",
-                            poster = child.Poster != null ? new Poster() { Url = child.Poster.Url() } : new Poster()
+                            poster = child.Poster != null ? new Poster() { Url = child.Poster.Url() ?? "" } : new Poster()
                             {
                                 Url = "images/placeholder.jpg"
                             },
-                            url = child.Url()
+                            url = child.Url() ?? ""
                         };
                         events.Add(simpleEvent);
                     }
-                    catch (Exception e) { }
+                    catch (Exception) { }
                 }
-            }
 
             return events;
         

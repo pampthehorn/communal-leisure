@@ -1,11 +1,11 @@
-﻿namespace website.Models.ViewModels
+namespace website.Models.ViewModels
 {
     public class TicketSelectionViewModel
     {
         public Guid EventNodeId { get; set; }
-        public List<TicketInput> Tickets { get; set; }
-        public string CustomerName { get; set; }
-        public string CustomerEmail { get; set; }
+        public List<TicketInput> Tickets { get; set; } = new List<TicketInput>();
+        public string CustomerName { get; set; } = string.Empty;
+        public string CustomerEmail { get; set; } = string.Empty;
     }
 
 

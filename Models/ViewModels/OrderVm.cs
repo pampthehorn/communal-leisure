@@ -6,7 +6,7 @@ namespace website.Models.ViewModels
     {
         public OrderModel? Order { get; set; }
         public IEnumerable<TicketModel> Tickets { get; set; } = new List<TicketModel>();
-        public string CustomerName { get; set; }
-        public string CustomerEmail { get; set; }
+        public string CustomerName { get; set; } = string.Empty;
+        public string CustomerEmail { get; set; } = string.Empty;
     }
 }

@@ -7,7 +7,7 @@ namespace website.Services
 {
     public interface IEmailService
     {
-        Task SendEmailAsync(string toEmail, string subject, string body, IEnumerable<string> bccEmails = null);
+        Task SendEmailAsync(string toEmail, string subject, string body, IEnumerable<string>? bccEmails = null);
     }
 
 
@@ -20,13 +20,13 @@ namespace website.Services
             _configuration = configuration;
         }
 
-        public async Task SendEmailAsync(string toEmail, string subject, string body, IEnumerable<string> bccEmails = null)
+        public async Task SendEmailAsync(string toEmail, string subject, string body, IEnumerable<string>? bccEmails = null)
         {
-            string host = _configuration.GetValue<string>("Umbraco:CMS:Global:Smtp:Host");
+            string? host = _configuration.GetValue<string>("Umbraco:CMS:Global:Smtp:Host");
             int port = _configuration.GetValue<int>("Umbraco:CMS:Global:Smtp:Port");
-            string fromAddress = _configuration.GetValue<string>("Umbraco:CMS:Global:Smtp:From");
-            string userName = _configuration.GetValue<string>("Umbraco:CMS:Global:Smtp:Username");
-            string password = _configuration.GetValue<string>("Umbraco:CMS:Global:Smtp:Password");
+            string? fromAddress = _configuration.GetValue<string>("Umbraco:CMS:Global:Smtp:From");
+            string? userName = _configuration.GetValue<string>("Umbraco:CMS:Global:Smtp:Username");
+            string? password = _configuration.GetValue<string>("Umbraco:CMS:Global:Smtp:Password");
 
             if (string.IsNullOrEmpty(host) || string.IsNullOrEmpty(fromAddress))
             {
@@ -59,7 +59,7 @@ namespace website.Services
                     {
                         smtpClient.Credentials = new NetworkCredential(userName, password);
                         smtpClient.UseDefaultCredentials = false;
-                        // smtpClient.EnableSsl = true; 
+                        // smtpClient.EnableSsl = true;
                     }
 
                     await smtpClient.SendMailAsync(mailMessage);

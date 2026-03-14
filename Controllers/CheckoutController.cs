@@ -71,7 +71,7 @@ public class CheckoutController : SurfaceController
 
         foreach (var selectedTicket in selectedTickets)
         {
-            var ticketContent = eventNode.Tickets.FirstOrDefault(t => t.Content.Key == selectedTicket.TicketId)?.Content;
+            var ticketContent = eventNode.Tickets?.FirstOrDefault(t => t.Content.Key == selectedTicket.TicketId)?.Content;
             if (ticketContent == null) continue;
 
             var ticket = new Ticket(ticketContent, _publishedValueFallback);
@@ -84,7 +84,7 @@ public class CheckoutController : SurfaceController
                 TicketId = selectedTicket.TicketId,
                 Quantity = selectedTicket.Quantity,
                 EventName = $"{eventNode.Name} - {eventNode.StartDate:yyyy-MM-dd}",
-                Type = ticket.Type,
+                Type = ticket.Type ?? "",
                 Cost = itemCost
             });
         }
@@ -122,7 +122,7 @@ public class CheckoutController : SurfaceController
 
             var freeCheckoutPage = _umbracoHelper.ContentAtRoot().DescendantsOrSelfOfType("checkout").FirstOrDefault();
 
-            return Redirect($"{freeCheckoutPage.Url()}?verify=true&oid={freeOrder.Id}");
+            return Redirect($"{freeCheckoutPage!.Url()}?verify=true&oid={freeOrder.Id}");
         }
 
         var orderData = new OrderVm
@@ -175,15 +175,15 @@ public class CheckoutController : SurfaceController
 
         TempData.Keep("OrderData");
 
-        string stripeSecretKey = null;
-        string stripePublishableKey = null;
+        string? stripeSecretKey = null;
+        string? stripePublishableKey = null;
 
         var eventId = storedOrderData.Tickets.First().EventNodeId;
         var eventPage = _umbracoHelper.Content(eventId) as Event;
 
-        if (eventPage?.Organizer !=null)
+        if (eventPage?.Organizer != null)
         {
-            var organizer = eventPage?.Organizer;
+            var organizer = eventPage.Organizer;
             if (!string.IsNullOrWhiteSpace(organizer.Value<string>("stripeSecretKey")))
             {
                 stripeSecretKey = organizer.Value<string>("stripeSecretKey");

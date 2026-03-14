@@ -36,7 +36,6 @@
         {
         private readonly IContentService _contentService;
         private readonly IMediaService _mediaService;
-        private readonly IUmbracoContextAccessor _contextAccessor;
         private readonly MediaFileManager _mediaFileManager;
         private readonly MediaUrlGeneratorCollection _mediaUrlGeneratorCollection;
         private readonly IShortStringHelper _shortStringHelper;
@@ -164,16 +163,16 @@
                         return StatusCode((int)response.StatusCode, "Error from AI provider");
                     }
 
-                    dynamic result = JsonConvert.DeserializeObject(responseString);
-                    string extractedText = result.candidates[0].content.parts[0].text;
+                    dynamic? result = JsonConvert.DeserializeObject(responseString);
+                    string extractedText = result!.candidates[0].content.parts[0].text;
 
                     extractedText = extractedText.Replace("```json", "").Replace("```", "").Trim();
 
-                    dynamic eventData = JsonConvert.DeserializeObject(extractedText);
+                    dynamic? eventData = JsonConvert.DeserializeObject(extractedText);
 
-                    if (eventData != null && eventData.startDate != null)
+                    if (eventData != null && eventData!.startDate != null)
                     {
-                        string aiDateString = (string)eventData.startDate;
+                        string aiDateString = (string)eventData!.startDate;
 
                         if (DateTime.TryParse(aiDateString, out DateTime aiDate))
                         {
@@ -220,9 +219,10 @@
                 if (acts == null) { throw new Exception("no acts"); }
 
 
-                var venues = _umbracoHelper.Content(1059).Siblings().FirstOrDefault(m => m.IsDocumentType(Venues.ModelTypeAlias)).DescendantsOfType(Venue.ModelTypeAlias).Select(m => new Venue(m, _ipvfb));
-                var venueMatch = venues.FirstOrDefault(m => m.Name + ", " + m.City == venue);
-        
+                var venuesContainer = _umbracoHelper.Content(1059)?.Siblings().FirstOrDefault(m => m.IsDocumentType(Venues.ModelTypeAlias));
+                var venues = venuesContainer?.DescendantsOfType(Venue.ModelTypeAlias).Select(m => new Venue(m, _ipvfb));
+                var venueMatch = venues?.FirstOrDefault(m => m.Name + ", " + m.City == venue);
+
                 var eventNode = _contentService.CreateAndSave(startDate.ToString("yyyy-MM-dd") + " " + acts,1059, Event.ModelTypeAlias ,-1);
                     organizer = "";
                     var currentMember = await _memberManager.GetCurrentMemberAsync();
@@ -274,10 +274,10 @@
 
                 var result = _contentService.Publish(eventNode, ["*"]);
 
-                  var eventsNode = new Events(_umbracoHelper.ContentAtRoot().FirstOrDefault(m => m.ContentType.Alias == "events"), _ipvfb);
+                  var eventsNode = new Events(_umbracoHelper.ContentAtRoot().FirstOrDefault(m => m.ContentType.Alias == "events")!, _ipvfb);
                 var publishedEventNode = _umbracoHelper.Content(result.Content.Key);
 
-                    var editLink = publishedEventNode.Url(mode: UrlMode.Absolute) +"?key=" + editKey;
+                    var editLink = publishedEventNode!.Url(mode: UrlMode.Absolute) +"?key=" + editKey;
 
                 var editLinkText = $"<br/><br/>Once published you will be able to edit with this link: {editLink}";
                 if (currentMember == null)
@@ -295,7 +295,7 @@
                 TempData["SuccessMessage"] = eventNode.Name + " submitted successfully.";
                 return RedirectToCurrentUmbracoPage();
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                 TempData["ErrorMessage"] = "Error submitting event. Please try again.";
                 return CurrentUmbracoPage();
@@ -313,9 +313,10 @@
               if (venue == null) { throw new Exception("no venue"); }
               if(email==null) { throw new Exception("no email"); }
 
-                var eventNode = _contentService.GetById(nodeId);
-                var venues = _umbracoHelper.Content(1059).Siblings().FirstOrDefault(m => m.IsDocumentType(Venues.ModelTypeAlias)).DescendantsOfType(Venue.ModelTypeAlias).Select(m => new Venue(m, _ipvfb));
-                var venueMatch = venues.FirstOrDefault(m => m.Name + ", " + m.City == venue);
+                var eventNode = _contentService.GetById(nodeId)!;
+                var venuesContainer = _umbracoHelper.Content(1059)?.Siblings().FirstOrDefault(m => m.IsDocumentType(Venues.ModelTypeAlias));
+                var venues = venuesContainer?.DescendantsOfType(Venue.ModelTypeAlias).Select(m => new Venue(m, _ipvfb));
+                var venueMatch = venues?.FirstOrDefault(m => m.Name + ", " + m.City == venue);
 
                 organizer = "";
                 var currentMember = await _memberManager.GetCurrentMemberAsync();
