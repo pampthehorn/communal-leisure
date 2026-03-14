@@ -100,7 +100,7 @@ namespace website.Controllers
             if (result.Succeeded)
             {
                 TempData["Status"] = "Password reset successfully. You can now log in.";
-                return Redirect("/");
+                return Redirect("/login");
             }
 
             foreach (var error in result.Errors)
