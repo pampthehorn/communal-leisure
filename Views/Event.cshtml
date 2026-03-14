@@ -254,6 +254,45 @@
 </div>
 
 
+@if (Model.Organizer != null)
+{
+    var organizerId = Model.Organizer.Id;
+    var relatedEvents = Model.Parent?.Children()
+        .Where(c => c.Id != Model.Id)
+        .Select(c => new Event(c, _ipvfb))
+        .Where(e => !e.Hide && e.EndDate >= DateTime.Now.AddHours(-1) && e.Organizer != null && e.Organizer.Id == organizerId)
+        .OrderBy(e => e.StartDate)
+        .Take(4)
+        .Select(e => new website.Models.EventItem
+        {
+            name = e.Acts ?? "",
+            startDate = e.StartDate,
+            endDate = e.EndDate,
+            acts = e.Acts ?? "",
+            venue = e.Venues != null ? e.Venues.First().Name : e.Venue ?? "",
+            venueAddress = e.Venues != null ? e.Venues.First().Value("address") + ", " + e.Venues.First().Value("city") + ", " + e.Venues.First().Value("postcode") : "",
+            venueUrl = e.Venues?.FirstOrDefault()?.Url() ?? "",
+            city = e.Venues != null ? e.Venues.First().Value<string>("city") ?? "" : "",
+            description = e.Description ?? "",
+            link = e.Link ?? "",
+            status = e.Status ?? "",
+            tags = e.Tags?.FirstOrDefault() != null ? e.Tags.Select(m => m.Name).Aggregate((a, b) => a + "," + b) : "",
+            poster = e.Poster != null ? new website.Models.Poster() { Url = e.Poster.Url() ?? "" } : new website.Models.Poster() { Url = "images/placeholder.jpg" },
+            url = e.Url() ?? ""
+        })
+        .ToList();
+
+    if (relatedEvents.Any())
+    {
+        <h2>Related events</h2>
+        <div class="related-events">
+            <ul class="events-list">
+                @Html.Partial("_EventList", relatedEvents)
+            </ul>
+        </div>
+    }
+}
+
 @if (isMyEvent)
 {
     @Html.Partial("~/Views/Partials/EditEventForm.cshtml", new Event(Model, _ipvfb))

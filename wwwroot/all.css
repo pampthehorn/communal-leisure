@@ -88,8 +88,8 @@ body {
 
 .event .event-date, .event h3, .event p {
 border-bottom: 1px dashed red;
-margin-bottom:2px;
-padding-bottom:2px;
+margin-bottom:8px;
+padding-bottom:8px;
 }
 
 .event-page .event-date, .event-page h3, .event-page p {
@@ -161,10 +161,19 @@ code {
 }
 
 a {
-    color: black;
-    word-wrap: break-word; 
-    overflow-wrap: break-word; 
+    color: #0000EE;
+    text-decoration: underline;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
     word-break: break-word;
+}
+
+a:visited {
+    color: #551A8B;
+}
+
+a:hover {
+    color: #0000EE;
 }
 
 
@@ -200,6 +209,11 @@ ul.listing.list-view {
     display: block;
     grid-template-columns: none;
     gap: 0;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 20px;
+    padding-right: 20px;
 }
 
 li.event-text-item {
@@ -241,9 +255,9 @@ li.event-text-item {
 }
 
 .poster-thumb {
-    width: 100px;
-    height: 100px;
-    object-fit: cover; 
+    width: 140px;
+    height: 190px;
+    object-fit: cover;
     display: block;
     border: 1px solid #eee;
 }
@@ -252,7 +266,7 @@ li.event-text-item {
     display: none; 
     position: absolute;
     top: 0;
-    left: 110px; 
+    left: 150px;
     width: 400px;
     z-index: 10;
     background: #fff;
@@ -268,6 +282,10 @@ li.event-text-item {
 
 .poster-container:hover .poster-popover {
     display: block;
+}
+
+.related-events .poster-popover {
+    display: none !important;
 }
 
 #loadMoreBtn {

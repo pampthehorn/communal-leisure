@@ -17,16 +17,16 @@
     <title>Gig Listings Glasgow & Edinburgh — DIY Events | Communal Leisure</title>
     <link rel="alternate" type="application/rss+xml" title="Communal Leisure Events Feed" href="/rss.xml" />
     <link rel="canonical" href="https://communalleisure.com/" />
-    <meta name="description" content="Independent gig listings for Glasgow and Edinburgh. DIY music events, art shows, free and cheap nights out from independent promoters. Updated daily.">
+    <meta name="description" content="Independent gig listings for Glasgow and Edinburgh. DIY music events, independent promoters.">
     <meta property="og:title" content="Gig Listings Glasgow & Edinburgh — DIY Events | Communal Leisure">
-    <meta property="og:description" content="Independent gig listings for Glasgow and Edinburgh. DIY music events, art shows, free and cheap nights out from independent promoters.">
+    <meta property="og:description" content="Independent gig listings for Glasgow and Edinburgh. DIY music events, independent promoters.">
     <meta property="og:image" content="https://communalleisure.com/img/rabbit.png">
     <meta property="og:url" content="https://communalleisure.com">
     <meta property="og:type" content="website">
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Gig Listings Glasgow & Edinburgh | Communal Leisure">
-    <meta name="twitter:description" content="Independent gig listings for Glasgow and Edinburgh. DIY music events, art shows, free and cheap nights out from independent promoters.">
+    <meta name="twitter:description" content="Independent gig listings for Glasgow and Edinburgh. DIY music events, independent promoters.">
     <meta name="twitter:image" content="https://communalleisure.com/img/rabbit.png">
 }
 
@@ -173,9 +173,9 @@
                 loadMoreBtn.addEventListener('click', loadMoreEvents);
 
                 const observerOptions = {
-                    root: null, 
-                    rootMargin: '100px', 
-                    threshold: 0.1
+                    root: null,
+                    rootMargin: '300px',
+                    threshold: 0
                 };
 
                 const observer = new IntersectionObserver((entries) => {
@@ -187,6 +187,20 @@
                 }, observerOptions);
 
                 observer.observe(loadMoreBtn);
+
+                // Fallback for fast scrolling where IntersectionObserver can miss
+                let scrollTimeout;
+                window.addEventListener('scroll', () => {
+                    clearTimeout(scrollTimeout);
+                    scrollTimeout = setTimeout(() => {
+                        if (!isLoading && loadMoreBtn.style.display !== 'none') {
+                            const rect = loadMoreBtn.getBoundingClientRect();
+                            if (rect.top < window.innerHeight + 300) {
+                                loadMoreEvents();
+                            }
+                        }
+                    }, 100);
+                }, { passive: true });
             }
         });
     </script>
