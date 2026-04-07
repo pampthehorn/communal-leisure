@@ -5,6 +5,7 @@ using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Web.Common;
 using Umbraco.Cms.Web.Common.PublishedModels;
 using website.Models;
+using website.Helpers;
 using website.Services;
 
 namespace website.Controllers
@@ -60,7 +61,7 @@ namespace website.Controllers
                 var parentNode = _helper.Content(1059);
                 if (parentNode == null) return NotFound("Event container not found");
 
-                var today = DateTime.Now.Date;
+                var today = UkDateHelper.TodayUk;
                 var sevenDaysFromNow = today.AddDays(7);
                 var oneWeekAgo = today.AddDays(-7);
 

@@ -49,14 +49,12 @@
     <span asp-validation-for="Poster" class="text-danger"></span>
         </div>
         <div>
-            <label asp-for="StartDate">Start Date:</label>
-            <input asp-for="StartDate" type="datetime-local" />
-            <span asp-validation-for="StartDate" class="text-danger"></span>
+            <label for="StartDate">Start Date:</label>
+            <input type="datetime-local" id="StartDate" name="startDate" value="@Model.StartDate.ToString("yyyy-MM-ddTHH:mm")" required />
         </div>
         <div>
-            <label asp-for="EndDate">End Date:</label>
-            <input asp-for="EndDate" type="datetime-local" />
-            <span asp-validation-for="EndDate" class="text-danger"></span>
+            <label for="EndDate">End Date:</label>
+            <input type="datetime-local" id="EndDate" name="endDate" value="@Model.EndDate.ToString("yyyy-MM-ddTHH:mm")" required />
         </div>
         <div>
             <label asp-for="Acts">Acts/Event title:</label>

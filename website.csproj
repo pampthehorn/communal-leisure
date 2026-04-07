@@ -4,6 +4,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+  <ItemGroup>
+    <Content Include="App_Plugins\CustomBackoffice\umbraco-package.json" />
+  </ItemGroup>
 
   <ItemGroup>
 <PackageReference Include="Stripe.net" Version="48.3.0" />
@@ -145,6 +148,10 @@
   <ItemGroup>
     <Folder Include="Composers\" />
     <Folder Include="wwwroot\rules\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="App_Plugins\CustomBackoffice\remove-dashboards.js" />
   </ItemGroup>
 
   <PropertyGroup>

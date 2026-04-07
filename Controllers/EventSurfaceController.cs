@@ -26,6 +26,7 @@
     using Umbraco.Cms.Web.Common.PublishedModels;
     using Umbraco.Cms.Web.Website.Controllers;
     using Umbraco.Extensions;
+    using website.Helpers;
     using website.Services;
     using Udi = Umbraco.Cms.Core.Udi;
     using SixLabors.ImageSharp;
@@ -109,7 +110,7 @@
                 var apiKey = _configuration["Gemini:ApiKey"];
                 var apiUrl = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={apiKey}";
 
-                var todayStr = DateTime.Now.ToString("yyyy-MM-dd");
+                var todayStr = UkDateHelper.TodayUk.ToString("yyyy-MM-dd");
 
                 var promptText = $@"
     Context: Today is {todayStr}.
@@ -176,7 +177,7 @@
 
                         if (DateTime.TryParse(aiDateString, out DateTime aiDate))
                         {
-                            var now = DateTime.Now;
+                            var now = UkDateHelper.NowUk;
 
                             var fixedDate = new DateTime(
                                 now.Year,
@@ -228,7 +229,6 @@
                     var currentMember = await _memberManager.GetCurrentMemberAsync();
                     if (currentMember != null) {
                         organizer = currentMember.Id;
-                        eventNode.SetValue("startDate", startDate);
                     }
                     if (poster != null && poster.Length > 0)
                     {
@@ -249,8 +249,8 @@
                     tagsToSave = splitTags.Aggregate((a, b) => a + "," + b);
                 }
 
-                    eventNode.SetValue("startDate", startDate);
-                    eventNode.SetValue("endDate", endDate);
+                    eventNode.SetValue("startDate", $"{{\"date\":\"{startDate:yyyy-MM-ddTHH:mm:ss}+00:00\"}}");
+                    eventNode.SetValue("endDate", $"{{\"date\":\"{endDate:yyyy-MM-ddTHH:mm:ss}+00:00\"}}");
                     eventNode.SetValue("acts", acts);
                 if (venueMatch != null)
                 {
@@ -346,8 +346,8 @@
                 }
 
                 eventNode.Name = startDate.ToString("yyyy-MM-dd") + " " + acts;
-                eventNode.SetValue("startDate", startDate);
-                eventNode.SetValue("endDate", endDate);
+                eventNode.SetValue("startDate", $"{{\"date\":\"{startDate:yyyy-MM-ddTHH:mm:ss}+00:00\"}}");
+                eventNode.SetValue("endDate", $"{{\"date\":\"{endDate:yyyy-MM-ddTHH:mm:ss}+00:00\"}}");
                 eventNode.SetValue("acts", acts);
                 eventNode.SetValue("email", email);
 

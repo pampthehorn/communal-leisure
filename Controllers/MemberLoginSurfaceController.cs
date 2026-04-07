@@ -60,7 +60,7 @@ namespace website.Controllers
                 {
                     return Redirect(redirectUrl);
                 }
-                return Redirect("/");
+                return Redirect("/login");
             }
 
             if (result.IsLockedOut)

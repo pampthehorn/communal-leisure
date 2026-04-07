@@ -1,4 +1,5 @@
 ﻿@using website.Models
+@using website.Helpers
 @model List<EventItem>
 
 @{
@@ -9,8 +10,8 @@
 {
     foreach (var e in Model)
     {
-        var startDate = e.startDate.ToUniversalTime();
-        var endDate = e.endDate.ToUniversalTime();
+        var startDate = UkDateHelper.ToUkTime(e.startDate);
+        var endDate = UkDateHelper.ToUkTime(e.endDate);
         string displayDate = $"{startDate.ToString(dateFormat)} - {(startDate.Date != endDate.Date ? endDate.ToString(dateFormat) : endDate.ToString("HH:mm"))}";
 
         <li class="event">

@@ -115,8 +115,18 @@
             function switchView(view) {
                 if (viewModeInput.value !== view) {
                     viewModeInput.value = view;
+                    sessionStorage.setItem('eventsViewMode', view);
                     filterForm.submit();
                 }
+            }
+
+            // Restore saved view mode if not explicitly set in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const savedView = sessionStorage.getItem('eventsViewMode');
+            if (savedView && !urlParams.has('ViewMode') && viewModeInput.value !== savedView) {
+                viewModeInput.value = savedView;
+                filterForm.submit();
+                return;
             }
 
             if (viewGridBtn) viewGridBtn.addEventListener('click', () => switchView('grid'));

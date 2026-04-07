@@ -6,6 +6,7 @@ using website.Models;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Web.Common.PublishedModels;
 using Umbraco.Cms.Web.Common;
+using website.Helpers;
 
 public class EventsController : RenderController
 {
@@ -97,11 +98,11 @@ public class EventsController : RenderController
             events = events.Where(e => e.city.Equals(selectedCity, StringComparison.OrdinalIgnoreCase)).ToList();
         }
 
-        var today = DateTime.UtcNow.Date;
+        var today = UkDateHelper.TodayUk;
         events = events.OrderBy(e =>
         {
-            DateTime start = e.startDate.ToUniversalTime().Date;
-            DateTime end = e.endDate.ToUniversalTime().Date;
+            DateTime start = e.startDate.Date;
+            DateTime end = e.endDate.Date;
 
             bool isToday = start <= today && end >= today;
             bool notStartedToday = start < today;
@@ -135,9 +136,7 @@ public class EventsController : RenderController
             var events = new List<EventItem>();
             var parentNode = _umbracoHelper.Content(1059);
             if (parentNode == null) return events;
-            var children = parentNode.Children().Select(m => new Event(m, _ipvfb)).Where(m => m.EndDate >= DateTime.Now.AddHours(-1) && !m.Hide);
-
-            var ukTimeZone = TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
+            var children = parentNode.Children().Select(m => new Event(m, _ipvfb)).Where(m => m.EndDate >= UkDateHelper.NowUk.AddHours(-1) && !m.Hide);
 
             foreach (var child in children)
                 {

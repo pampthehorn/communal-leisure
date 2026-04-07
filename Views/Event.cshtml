@@ -4,6 +4,7 @@
 @inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.Event>
 @using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
 @using website
+@using website.Helpers
 @using System.Text.Encodings.Web
 @inject IPublishedValueFallback _ipvfb;
 @inject IMemberManager _memberManager;
@@ -30,8 +31,8 @@
         isMyEvent = true;
     }
 
-    var startDate = Model.StartDate.ToUniversalTime();
-    var endDate = Model.EndDate.ToUniversalTime();
+    var startDate = UkDateHelper.ToUkTime(Model.StartDate);
+    var endDate = UkDateHelper.ToUkTime(Model.EndDate);
    // string displayDate = $"{startDate:R} - {(startDate.Date != endDate.Date ? endDate.ToString("R") : endDate.ToString("HH:mm"))}";
     string displayDate = $"{startDate:dddd, d MMM} • {startDate:t} - {(startDate.Date != endDate.Date ? endDate.ToString("t") : endDate.ToString("t"))}";
 
@@ -67,8 +68,8 @@
           "@@context": "https://schema.org",
           "@@type": "MusicEvent",
           "name": "@JavaScriptEncoder.Default.Encode(Model.Name)",
-          "startDate": "@startDate.ToString("yyyy-MM-ddTHH:mm:ssZ")",
-          "endDate": "@endDate.ToString("yyyy-MM-ddTHH:mm:ssZ")",
+          "startDate": "@startDate.ToString("yyyy-MM-ddTHH:mm:ss+00:00")",
+          "endDate": "@endDate.ToString("yyyy-MM-ddTHH:mm:ss+00:00")",
           "eventStatus": "https://schema.org/EventScheduled",
           "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
           "location": {
@@ -260,7 +261,7 @@
     var relatedEvents = Model.Parent?.Children()
         .Where(c => c.Id != Model.Id)
         .Select(c => new Event(c, _ipvfb))
-        .Where(e => !e.Hide && e.EndDate >= DateTime.Now.AddHours(-1) && e.Organizer != null && e.Organizer.Id == organizerId)
+        .Where(e => !e.Hide && e.EndDate >= UkDateHelper.NowUk.AddHours(-1) && e.Organizer != null && e.Organizer.Id == organizerId)
         .OrderBy(e => e.StartDate)
         .Take(4)
         .Select(e => new website.Models.EventItem

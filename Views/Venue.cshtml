@@ -79,7 +79,7 @@
 
 @if (upcomingEvents.Any())
 {
-    <ul class="listing grid-view">
+    <ul class="listing list-view">
         @foreach (var e in upcomingEvents)
         {
             var startDate = e.StartDate.ToUniversalTime();
@@ -87,17 +87,24 @@
             string displayDate = $"{startDate.ToString(dateFormat)} - {(startDate.Date != endDate.Date ? endDate.ToString(dateFormat) : endDate.ToString("HH:mm"))}";
             var posterUrl = e.Poster != null ? e.Poster.Url() : "/images/placeholder.jpg";
 
-            <li class="event">
-                <a href="@e.Url()">
-                    <img src="@($"{posterUrl}?width=400&quality=80")" alt="@e.Acts" />
-                </a>
-                <p class="event-date">
-                    <span title="add to calendar">📅</span>
-                    <time>@displayDate</time>
-                </p>
-                <h3>@e.Acts</h3>
-                <p>@e.Description</p>
-                <a href="@e.Link" target="_blank">@e.Link</a>
+            <li class="event-text-item">
+                <div class="poster-container">
+                    <a href="@e.Url()">
+                        <img src="@($"{posterUrl}?width=140&height=190&mode=crop&quality=80")" alt="@e.Acts" class="poster-thumb" />
+                    </a>
+                    <div class="poster-popover">
+                        <img src="@($"{posterUrl}?width=400&quality=80")" alt="@e.Acts" />
+                    </div>
+                </div>
+                <div class="event-details">
+                    <p class="event-date">
+                        <span title="add to calendar">📅</span>
+                        <time>@displayDate</time>
+                    </p>
+                    <h3><a href="@e.Url()">@e.Acts</a></h3>
+                    <p>@e.Description</p>
+                    <a href="@e.Link" target="_blank">@e.Link</a>
+                </div>
             </li>
         }
     </ul>

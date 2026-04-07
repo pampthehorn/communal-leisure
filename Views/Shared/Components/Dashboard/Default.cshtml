@@ -1,0 +1,152 @@
+@using Umbraco.Cms.Web.Website.Controllers
+@using Umbraco.Cms.Web.Common.Models
+@using website.Models
+@model DashboardViewModel
+
+@{
+    var dateFormat = "ddd d MMM HH:mm";
+    var logoutModel = new PostRedirectModel { RedirectUrl = null };
+}
+
+<h2>Dashboard</h2>
+
+<p>Logged in as <strong>@Model.MemberName</strong></p>
+
+<div style="margin-bottom: 20px;">
+    <a href="/add-event">Add Event</a>
+    &nbsp;|&nbsp;
+    @using (Html.BeginUmbracoForm<UmbLoginStatusController>("HandleLogout", new { RedirectUrl = logoutModel.RedirectUrl }))
+    {
+        <button type="submit" style="background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline; font-size: inherit; font-family: inherit;">Log out</button>
+    }
+</div>
+
+@if (Model.UpcomingEvents.Any())
+{
+    <h3>Upcoming Events</h3>
+    <ul class="listing list-view">
+        @foreach (var item in Model.UpcomingEvents)
+        {
+            var e = item.Event;
+            var startDate = e.startDate.ToUniversalTime();
+            var endDate = e.endDate.ToUniversalTime();
+            string displayDate = $"{startDate.ToString(dateFormat)} - {(startDate.Date != endDate.Date ? endDate.ToString(dateFormat) : endDate.ToString("HH:mm"))}";
+
+            <li class="event-text-item">
+                <div class="poster-container">
+                    <a href="@e.url">
+                        <img src="@($"{e.poster.Url}?width=140&height=190&mode=crop&quality=80")" alt="@e.name" class="poster-thumb" />
+                    </a>
+                    <div class="poster-popover">
+                        <img src="@($"{e.poster.Url}?width=400&quality=80")" alt="@e.name" />
+                    </div>
+                </div>
+
+                <div class="event-details">
+                    <p class="event-date">
+                        <span title="add to calendar">📅</span>
+                        <time>@displayDate</time>
+                    </p>
+                    <h3><a href="@e.url">@e.name</a></h3>
+                    <p>@e.description</p>
+                    <p>
+                        @if (!string.IsNullOrEmpty(e.venueUrl))
+                        {
+                            <a href="@e.venueUrl">@e.venue</a>
+                        }
+                        else
+                        {
+                            @e.venue
+                        }
+                        @if (!string.IsNullOrEmpty(e.venueAddress))
+                        {
+                            <span>@e.venueAddress</span>
+                        }
+                    </p>
+
+                    @if (item.TicketAllocations.Any())
+                    {
+                        <div class="ticket-summary">
+                            @foreach (var ta in item.TicketAllocations)
+                            {
+                                <span>
+                                    <strong>@ta.Type:</strong>
+                                    @ta.Sold@(ta.Allocation > 0 ? $"/{ta.Allocation}" : "")
+                                    sold
+                                    @if (ta.Allocation > 0 && ta.Sold >= ta.Allocation)
+                                    {
+                                        <span style="color: red; font-weight: bold;">(SOLD OUT)</span>
+                                    }
+                                    &nbsp;
+                                </span>
+                            }
+                        </div>
+                    }
+                </div>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <h3>Upcoming Events</h3>
+    <p>No upcoming events.</p>
+}
+
+@if (Model.PastEvents.Any())
+{
+    <h3>Past Events</h3>
+    <ul class="listing list-view">
+        @foreach (var item in Model.PastEvents)
+        {
+            var e = item.Event;
+            var startDate = e.startDate.ToUniversalTime();
+            var endDate = e.endDate.ToUniversalTime();
+            string displayDate = $"{startDate.ToString(dateFormat)} - {(startDate.Date != endDate.Date ? endDate.ToString(dateFormat) : endDate.ToString("HH:mm"))}";
+
+            <li class="event-text-item">
+                <div class="poster-container">
+                    <a href="@e.url">
+                        <img src="@($"{e.poster.Url}?width=140&height=190&mode=crop&quality=80")" alt="@e.name" class="poster-thumb" />
+                    </a>
+                    <div class="poster-popover">
+                        <img src="@($"{e.poster.Url}?width=400&quality=80")" alt="@e.name" />
+                    </div>
+                </div>
+
+                <div class="event-details">
+                    <p class="event-date">
+                        <time>@displayDate</time>
+                    </p>
+                    <h3><a href="@e.url">@e.name</a></h3>
+                    <p>@e.description</p>
+                    <p>
+                        @if (!string.IsNullOrEmpty(e.venueUrl))
+                        {
+                            <a href="@e.venueUrl">@e.venue</a>
+                        }
+                        else
+                        {
+                            @e.venue
+                        }
+                    </p>
+
+                    @if (item.TicketAllocations.Any())
+                    {
+                        <div class="ticket-summary">
+                            @foreach (var ta in item.TicketAllocations)
+                            {
+                                <span>
+                                    <strong>@ta.Type:</strong>
+                                    @ta.Sold@(ta.Allocation > 0 ? $"/{ta.Allocation}" : "")
+                                    sold
+                                    &nbsp;
+                                </span>
+                            }
+                        </div>
+                    }
+                </div>
+            </li>
+        }
+    </ul>
+}

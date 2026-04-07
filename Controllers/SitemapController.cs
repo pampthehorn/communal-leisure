@@ -6,6 +6,7 @@ namespace website.Controllers
     using Umbraco.Cms.Core.Models.PublishedContent;
     using Umbraco.Cms.Web.Common;
     using Umbraco.Cms.Web.Common.PublishedModels;
+    using website.Helpers;
 
     [Route("sitemapxml")]
     public class SitemapController : Controller
@@ -35,7 +36,7 @@ namespace website.Controllers
             {
                 var events = eventsNode.Children()
                     .Select(m => new Event(m, _ipvfb))
-                    .Where(m => m.EndDate >= DateTime.Now.AddHours(-1) && !m.Hide);
+                    .Where(m => m.EndDate >= UkDateHelper.NowUk.AddHours(-1) && !m.Hide);
 
                 foreach (var evt in events)
                 {

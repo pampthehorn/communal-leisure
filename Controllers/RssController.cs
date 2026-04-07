@@ -10,6 +10,7 @@
     using Umbraco.Cms.Web.Common;
     using Umbraco.Cms.Web.Common.Controllers;
     using Umbraco.Cms.Web.Common.PublishedModels;
+    using website.Helpers;
     using website.Models;
     public class RssController : RenderController
     {
@@ -134,7 +135,7 @@
 
             var children = parentNode.Children()
                 .Select(m => new Event(m, _ipvfb))
-                .Where(m => m.EndDate >= DateTime.Now.AddHours(-1) && !m.Hide);
+                .Where(m => m.EndDate >= UkDateHelper.NowUk.AddHours(-1) && !m.Hide);
 
             foreach (var child in children)
             {

@@ -26,6 +26,7 @@
 
 
 
+<div class="page-content">
 @if (isLoggedIn)
 {
     <h3>Add an event</h3>
@@ -51,6 +52,7 @@ else
 }
 
 @Html.Partial("~/Views/Partials/CreateEventForm.cshtml", new Event(Model, _ipvfb))
+</div>
 
 
 
