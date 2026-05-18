@@ -1,11 +1,14 @@
 @using Umbraco.Cms.Web.Website.Controllers
 @using Umbraco.Cms.Web.Common.Models
+@using website.Controllers
 @using website.Models
+
 @model DashboardViewModel
 
 @{
     var dateFormat = "ddd d MMM HH:mm";
     var logoutModel = new PostRedirectModel { RedirectUrl = null };
+    var promoterRequestStatus = TempData["PromoterRequestStatus"] as string;
 }
 
 <h2>Dashboard</h2>
@@ -21,6 +24,99 @@
     }
 </div>
 
+<div class="promoter-status" style="margin-bottom: 24px; padding: 12px; border: 1px solid #ddd;">
+    @if (promoterRequestStatus == "requested")
+    {
+        <div class="alert alert-success">Thanks — we've passed your promoter request to the admins. You'll hear back soon.</div>
+    }
+    else if (promoterRequestStatus == "alreadyApproved")
+    {
+        <div class="alert alert-info">You're already approved as a promoter.</div>
+    }
+
+    @switch (Model.PromoterStatus)
+    {
+        case PromoterStatus.Approved:
+            <p><strong>Promoter:</strong> approved — your events go live without admin approval.</p>
+            break;
+
+        case PromoterStatus.Pending:
+            <p><strong>Promoter:</strong> pending admin approval.</p>
+            break;
+
+        case PromoterStatus.None:
+            <p>Want to add your own gigs? Promoter status lets you publish events without waiting for admin approval.</p>
+            @using (Html.BeginUmbracoForm<RegistrationSurfaceController>("RequestPromoter", FormMethod.Post))
+            {
+                <button type="submit" class="btn btn-primary">I would like to add my own gigs</button>
+            }
+            break;
+    }
+</div>
+
+@if (Model.MyTickets.Any())
+{
+    <h3>My Tickets</h3>
+    <ul class="listing list-view my-tickets">
+        @foreach (var group in Model.MyTickets)
+        {
+            string whenLine = "";
+            if (group.EventStartDate.HasValue)
+            {
+                var startUk = UkDateHelper.ToUkTime(group.EventStartDate.Value);
+                whenLine = startUk.ToString(dateFormat);
+            }
+
+            <li class="event-text-item @(group.IsPastEvent ? "past-ticket" : "")">
+                <div class="event-details">
+                    <h3>
+                        @if (!string.IsNullOrEmpty(group.EventUrl))
+                        {
+                            <a href="@group.EventUrl">@group.EventName</a>
+                        }
+                        else
+                        {
+                            @group.EventName
+                        }
+                    </h3>
+                    @if (!string.IsNullOrEmpty(whenLine))
+                    {
+                        <p class="event-date"><time>@whenLine</time></p>
+                    }
+                    @if (!string.IsNullOrEmpty(group.Venue))
+                    {
+                        <p>@group.Venue</p>
+                    }
+
+                    @foreach (var line in group.Lines)
+                    {
+                        <div class="ticket-line" style="margin: 8px 0;">
+                            <strong>@line.Quantity x @line.Type</strong>
+                            @if (line.Codes.Any())
+                            {
+                                <ul style="margin: 4px 0 0 0; padding-left: 18px;">
+                                    @foreach (var code in line.Codes)
+                                    {
+                                        <li><code>@code</code></li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <span style="color: #888;"> (codes pending)</span>
+                            }
+                        </div>
+                    }
+
+                    <p style="font-size: 0.85em; color: #666;">
+                        Order #@group.OrderId &middot; purchased @group.OrderDate.ToUniversalTime().ToString("d MMM yyyy")
+                    </p>
+                </div>
+            </li>
+        }
+    </ul>
+}
+
 @if (Model.UpcomingEvents.Any())
 {
     <h3>Upcoming Events</h3>
@@ -28,8 +124,8 @@
         @foreach (var item in Model.UpcomingEvents)
         {
             var e = item.Event;
-            var startDate = e.startDate.ToUniversalTime();
-            var endDate = e.endDate.ToUniversalTime();
+            var startDate = UkDateHelper.ToUkTime(e.startDate);
+            var endDate = UkDateHelper.ToUkTime(e.endDate);
             string displayDate = $"{startDate.ToString(dateFormat)} - {(startDate.Date != endDate.Date ? endDate.ToString(dateFormat) : endDate.ToString("HH:mm"))}";
 
             <li class="event-text-item">
@@ -100,8 +196,8 @@ else
         @foreach (var item in Model.PastEvents)
         {
             var e = item.Event;
-            var startDate = e.startDate.ToUniversalTime();
-            var endDate = e.endDate.ToUniversalTime();
+            var startDate = UkDateHelper.ToUkTime(e.startDate);
+            var endDate = UkDateHelper.ToUkTime(e.endDate);
             string displayDate = $"{startDate.ToString(dateFormat)} - {(startDate.Date != endDate.Date ? endDate.ToString(dateFormat) : endDate.ToString("HH:mm"))}";
 
             <li class="event-text-item">

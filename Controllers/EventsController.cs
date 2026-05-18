@@ -145,8 +145,8 @@ public class EventsController : RenderController
                         var simpleEvent = new EventItem
                         {
                             name = child.Acts ?? "",
-                            startDate = child.StartDate,
-                            endDate = child.EndDate,
+                            startDate = child.StartDate ?? DateTime.MinValue,
+                            endDate = child.EndDate ?? DateTime.MinValue,
                             acts = child.Acts ?? "",
                             venue = child.Venues != null ? child.Venues.First().Name : child.Venue ?? "",
                             venueAddress = child.Venues != null ? child.Venues.First().Value("address") + ", " + child.Venues.First().Value("city") + ", " + child.Venues.First().Value("postcode") : "",
@@ -160,7 +160,10 @@ public class EventsController : RenderController
                             {
                                 Url = "images/placeholder.jpg"
                             },
-                            url = child.Url() ?? ""
+                            url = child.Url() ?? "",
+                            sellsTicketsOnline = child.TicketsOnline
+                                && child.Tickets != null
+                                && child.Tickets.Any(t => new Ticket(t.Content, _ipvfb).Available)
                         };
                         events.Add(simpleEvent);
                     }

@@ -133,7 +133,16 @@ namespace website.Services
                     ticket.TicketCodes = string.Join(",", codes);
                     await db.UpdateAsync(ticket);
                 }
-                allTicketsForEmail.Add($"<li><strong>{ticket.Quantity}x {ticket.Type} ({ticket.EventName})</strong><br/>Codes: {ticket.TicketCodes}</li>");
+
+                var eventPage = _umbracoHelper.Content(ticket.EventNodeId) as Event;
+                string whenLine = "";
+                if (eventPage?.StartDate.HasValue == true)
+                {
+                    var whenUk = UkDateHelper.ToUkTime(eventPage.StartDate.Value);
+                    whenLine = $"<br/>{whenUk:ddd d MMM yyyy} at {whenUk:HH:mm}";
+                }
+
+                allTicketsForEmail.Add($"<li><strong>{ticket.Quantity}x {ticket.Type} ({ticket.EventName})</strong>{whenLine}<br/>Codes: {ticket.TicketCodes}</li>");
             }
 
             var description = string.Join(", ", tickets.Select(t => $"{t.Quantity}x {t.Type} ticket for {t.EventName}"));

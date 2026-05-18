@@ -20,6 +20,9 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
 builder.Services.AddSingleton<IEmailService, EmailService>();
 builder.Services.AddScoped<IOrderProcessingService, OrderProcessingService>();
+builder.Services.AddScoped<IWeeklyMailService, WeeklyMailService>();
+builder.Services.AddHostedService<WeeklyMailBackgroundService>();
+builder.Services.AddHttpClient<ITurnstileService, TurnstileService>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {

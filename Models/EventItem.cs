@@ -19,6 +19,7 @@ namespace website.Models
         public DateTime startDate { get; set; }
         public DateTime endDate { get; set; }
         public string url { get; set; } = string.Empty;
+        public bool sellsTicketsOnline { get; set; }
 
     }
 

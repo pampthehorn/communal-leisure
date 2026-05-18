@@ -16,5 +16,9 @@
       <match url="^sitemap.xml$" />
       <action type="Rewrite" url="/sitemapxml" appendQueryString="false" />
     </rule>
+    <rule name="Zines index.html redirect" stopProcessing="true">
+      <match url="^zines/index\.html$" />
+      <action type="Redirect" url="/zines/" redirectType="Permanent" appendQueryString="false" />
+    </rule>
   </rules>
 </rewrite>

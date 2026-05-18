@@ -46,6 +46,7 @@
         private readonly UmbracoHelper _umbracoHelper;
         private readonly IPublishedValueFallback _ipvfb;
         private readonly IEmailService _emailService;
+        private readonly ITurnstileService _turnstileService;
         private readonly ILogger<EventSurfaceController> _logger;
 
 
@@ -59,6 +60,7 @@
         IMemberManager memberManager,
         IConfiguration configuration,
         IEmailService emailService,
+        ITurnstileService turnstileService,
         UmbracoHelper umbracoHelper,
         IPublishedValueFallback ipvfb,
         ILogger<EventSurfaceController> logger)
@@ -75,6 +77,7 @@
             _umbracoHelper = umbracoHelper;
             _ipvfb = ipvfb;
             _emailService = emailService;
+            _turnstileService = turnstileService;
             _logger = logger;
         }
 
@@ -211,10 +214,18 @@
 
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
             public async Task<IActionResult> SubmitEventAsync(IFormFile poster, DateTime startDate, DateTime endDate, string acts, string venue, string description, string link, string organizer, string tags, string email)
         {
             try
                 {
+                var turnstileToken = Request.Form["cf-turnstile-response"].ToString();
+                var remoteIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+                if (!await _turnstileService.VerifyAsync(turnstileToken, remoteIp))
+                {
+                    TempData["ErrorMessage"] = "Please complete the verification challenge and try again.";
+                    return CurrentUmbracoPage();
+                }
 
                 if (poster == null) { throw new Exception("no poster"); }
                 if (acts == null) { throw new Exception("no acts"); }
@@ -227,9 +238,13 @@
                 var eventNode = _contentService.CreateAndSave(startDate.ToString("yyyy-MM-dd") + " " + acts,1059, Event.ModelTypeAlias ,-1);
                     organizer = "";
                     var currentMember = await _memberManager.GetCurrentMemberAsync();
+                    var isPromoter = false;
                     if (currentMember != null) {
                         organizer = currentMember.Id;
+                        var memberRoles = await _memberManager.GetRolesAsync(currentMember);
+                        isPromoter = memberRoles.Contains("promoter");
                     }
+                    eventNode.SetValue("hide", !isPromoter);
                     if (poster != null && poster.Length > 0)
                     {
                         IMedia media = _mediaService.CreateMedia(poster.FileName, Constants.System.Root, Constants.Conventions.MediaTypes.Image);
@@ -279,11 +294,7 @@
 
                     var editLink = publishedEventNode!.Url(mode: UrlMode.Absolute) +"?key=" + editKey;
 
-                var editLinkText = $"<br/><br/>Once published you will be able to edit with this link: {editLink}";
-                if (currentMember == null)
-                {
-                    _contentService.Unpublish(eventNode, "*");
-                }
+                var editLinkText = $"<br/><br/>Edit link: {editLink}";
 
                 string subject = $"New Event Submitted: {acts} on {startDate.ToShortDateString()}";
                 string body = $"A new event has been submitted.<br/><br/><b>Acts:</b> {acts}<br/><b>Date:</b> {startDate}{editLinkText}";
@@ -291,9 +302,30 @@
 
                 await _emailService.SendEmailAsync(toAddress, subject, body, eventsNode.NotifyEmails);
 
+                if (!email.IsNullOrWhiteSpace())
+                {
+                    try
+                    {
+                        string visibilityNote = isPromoter
+                            ? "Your event is now live on the site."
+                            : "Your event won't appear on the listings until an admin approves it.";
+                        string submitterSubject = $"Your event submission: {acts}";
+                        string submitterBody = $"Thanks for submitting your event to Communal Leisure.<br/><br/>" +
+                                               $"<b>Acts:</b> {acts}<br/>" +
+                                               $"<b>Date:</b> {startDate}<br/><br/>" +
+                                               $"{visibilityNote} You can edit it any time using this link:<br/>" +
+                                               $"<a href=\"{editLink}\">{editLink}</a>";
+                        await _emailService.SendEmailAsync(email, submitterSubject, submitterBody);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to send submitter confirmation email to {Email} for event {EventName}", email, eventNode.Name);
+                    }
+                }
 
                 TempData["SuccessMessage"] = eventNode.Name + " submitted successfully.";
-                return RedirectToCurrentUmbracoPage();
+                TempData["EditLink"] = editLink;
+                return Redirect(editLink);
                 }
                 catch (Exception)
                 {
@@ -303,6 +335,7 @@
             }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditEventAsync(int nodeId, IFormFile poster, DateTime startDate, DateTime endDate, string acts, string venue, string description, string link, string organizer, string tags, string email, string status)
         {
 

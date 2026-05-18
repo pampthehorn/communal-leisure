@@ -8,6 +8,7 @@ using Umbraco.Cms.Core.Web;
 using Umbraco.Cms.Infrastructure.Persistence;
 using Umbraco.Cms.Web.Common.Security;
 using Umbraco.Cms.Web.Website.Controllers;
+using website.Services;
 
 namespace website.Controllers
 {
@@ -15,6 +16,7 @@ namespace website.Controllers
     {
         private readonly IMemberManager _memberManager;
         private readonly MemberSignInManager _memberSignInManager;
+        private readonly ITurnstileService _turnstileService;
 
         public MemberLoginSurfaceController(
             IUmbracoContextAccessor umbracoContextAccessor,
@@ -24,11 +26,13 @@ namespace website.Controllers
             IProfilingLogger profilingLogger,
             IPublishedUrlProvider publishedUrlProvider,
             IMemberManager memberManager,
-            MemberSignInManager memberSignInManager)
+            MemberSignInManager memberSignInManager,
+            ITurnstileService turnstileService)
             : base(umbracoContextAccessor, databaseFactory, services, appCaches, profilingLogger, publishedUrlProvider)
         {
             _memberManager = memberManager;
             _memberSignInManager = memberSignInManager;
+            _turnstileService = turnstileService;
         }
 
         [HttpPost]
@@ -38,6 +42,14 @@ namespace website.Controllers
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
                 TempData["LoginError"] = "Please enter your username/email and password.";
+                return RedirectToCurrentUmbracoPage();
+            }
+
+            var turnstileToken = Request.Form["cf-turnstile-response"].ToString();
+            var remoteIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+            if (!await _turnstileService.VerifyAsync(turnstileToken, remoteIp))
+            {
+                TempData["LoginError"] = "Please complete the verification challenge and try again.";
                 return RedirectToCurrentUmbracoPage();
             }
 

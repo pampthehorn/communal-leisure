@@ -88,6 +88,7 @@
             <input asp-for="Email" type="email" value="@memberEmail" required />
             <span asp-validation-for="Email" class="text-danger"></span>
         </div>
+        @await Html.PartialAsync("_TurnstileWidget")
         <div>
             <input type="submit" value="Submit Event" />
         </div>

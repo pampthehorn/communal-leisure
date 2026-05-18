@@ -14,10 +14,12 @@ namespace website.Services
     public class EmailService : IEmailService
     {
         private readonly IConfiguration _configuration;
+        private readonly ILogger<EmailService> _logger;
 
-        public EmailService(IConfiguration configuration)
+        public EmailService(IConfiguration configuration, ILogger<EmailService> logger)
         {
             _configuration = configuration;
+            _logger = logger;
         }
 
         public async Task SendEmailAsync(string toEmail, string subject, string body, IEnumerable<string>? bccEmails = null)
@@ -30,11 +32,26 @@ namespace website.Services
 
             if (string.IsNullOrEmpty(host) || string.IsNullOrEmpty(fromAddress))
             {
+                _logger.LogError("SMTP not configured — cannot send '{Subject}' to {ToEmail}", subject, toEmail);
                 throw new InvalidOperationException("SMTP settings are not configured in appsettings.json.");
             }
 
-            var fromMailAddress = new MailAddress(fromAddress, "Communal Leisure");
-            var toMailAddress = new MailAddress(toEmail);
+            MailAddress fromMailAddress;
+            MailAddress toMailAddress;
+            try
+            {
+                fromMailAddress = new MailAddress(fromAddress, "Communal Leisure");
+                toMailAddress = new MailAddress(toEmail);
+            }
+            catch (FormatException ex)
+            {
+                _logger.LogError(ex, "Invalid email address format — cannot send '{Subject}' to {ToEmail} from {FromAddress}", subject, toEmail, fromAddress);
+                throw;
+            }
+
+            var bccList = bccEmails?
+                .Where(a => !string.IsNullOrWhiteSpace(a))
+                .ToList() ?? new List<string>();
 
             using (var mailMessage = new MailMessage(fromMailAddress, toMailAddress))
             {
@@ -42,15 +59,9 @@ namespace website.Services
                 mailMessage.Body = body;
                 mailMessage.IsBodyHtml = true;
 
-                if (bccEmails != null)
+                foreach (var address in bccList)
                 {
-                    foreach (var address in bccEmails)
-                    {
-                        if (!string.IsNullOrWhiteSpace(address))
-                        {
-                            mailMessage.Bcc.Add(address);
-                        }
-                    }
+                    mailMessage.Bcc.Add(address);
                 }
 
                 using (var smtpClient = new SmtpClient(host, port))
@@ -62,7 +73,20 @@ namespace website.Services
                         // smtpClient.EnableSsl = true;
                     }
 
-                    await smtpClient.SendMailAsync(mailMessage);
+                    try
+                    {
+                        await smtpClient.SendMailAsync(mailMessage);
+                        _logger.LogInformation(
+                            "Sent email '{Subject}' to {ToEmail} (bcc: {BccCount}) via {Host}:{Port}",
+                            subject, toEmail, bccList.Count, host, port);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex,
+                            "Failed to send email '{Subject}' to {ToEmail} (bcc: {BccCount}) via {Host}:{Port}",
+                            subject, toEmail, bccList.Count, host, port);
+                        throw;
+                    }
                 }
             }
         }

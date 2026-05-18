@@ -29,6 +29,7 @@ public class CheckoutController : SurfaceController
     private readonly IPublishedValueFallback _publishedValueFallback;
     private readonly IOrderProcessingService _orderProcessingService;
     private readonly IEmailService _emailService;
+    private readonly ITurnstileService _turnstileService;
 
     public CheckoutController(
         IUmbracoContextAccessor umbracoContextAccessor,
@@ -41,6 +42,7 @@ public class CheckoutController : SurfaceController
         UmbracoHelper umbracoHelper,
         IEmailService emailService,
         IOrderProcessingService orderProcessingService,
+        ITurnstileService turnstileService,
         IPublishedValueFallback publishedValueFallback)
         : base(umbracoContextAccessor, databaseFactory, services, appCaches, profilingLogger, publishedUrlProvider)
     {
@@ -50,6 +52,7 @@ public class CheckoutController : SurfaceController
         _publishedValueFallback = publishedValueFallback;
         _emailService = emailService;
         _orderProcessingService = orderProcessingService;
+        _turnstileService = turnstileService;
     }
 
     [HttpPost]
@@ -60,6 +63,14 @@ public class CheckoutController : SurfaceController
 
         if (!selectedTickets.Any())
         {
+            return RedirectToUmbracoPage(model.EventNodeId);
+        }
+
+        var turnstileToken = Request.Form["cf-turnstile-response"].ToString();
+        var remoteIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+        if (!await _turnstileService.VerifyAsync(turnstileToken, remoteIp))
+        {
+            TempData["TicketError"] = "Please complete the verification challenge and try again.";
             return RedirectToUmbracoPage(model.EventNodeId);
         }
 

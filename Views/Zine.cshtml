@@ -1,0 +1,45 @@
+﻿@using Umbraco.Cms.Core.Services
+@using Umbraco.Cms.Web.Common.PublishedModels
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.Zine>
+@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels
+
+@inject IPublishedValueFallback _publishedValueFallback;
+
+@{
+    Layout = "_Layout.cshtml";
+
+    var coverUrl = Model.Cover?.Url();
+    var pdfUrl = Model.Pdf?.Url();
+    var title = $"Communal Leisure {Model.Name} — Zine archive";
+}
+
+@section Head {
+    <title>@title</title>
+    <link rel="canonical" href="@Model.Url(mode: UrlMode.Absolute)" />
+    <meta name="description" content="Download or read Communal Leisure @Model.Name from the zine archive.">
+    <meta property="og:title" content="@title">
+    <meta property="og:description" content="Download or read Communal Leisure @Model.Name from the zine archive.">
+    <meta property="og:image" content="@(coverUrl ?? "https://communalleisure.com/img/rabbit.png")">
+    <meta property="og:url" content="@Model.Url(mode: UrlMode.Absolute)">
+    <meta property="og:type" content="article">
+}
+
+<a href="@Model.Parent.Url()" style="display:inline-block;margin-bottom:1rem;"> &lt; all Zines</a>
+
+<h2>Communal Leisure @Model.Name</h2>
+
+<div class="listing">
+    <div>
+        @if (!string.IsNullOrEmpty(coverUrl))
+        {
+            <img src="@coverUrl" alt="@Model.Name cover" />
+        }
+        @if (!string.IsNullOrEmpty(pdfUrl))
+        {
+            <p>
+                <a href="@pdfUrl" download="">Download</a> |
+                <a target="_blank" href="@pdfUrl">Read</a>
+            </p>
+        }
+    </div>
+</div>

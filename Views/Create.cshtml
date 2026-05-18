@@ -34,14 +34,7 @@
 else
 {
     <h3>Submit an event</h3>
-    <p>This will submit your event for review.</p>
-}
-
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success">
-        @TempData["SuccessMessage"]
-    </div>
+    <p>Your event won't appear on the listings until an admin approves it, but you'll be able to edit it in the meantime — no need to resubmit if you spot a mistake.</p>
 }
 
 @if (TempData["ErrorMessage"] != null)

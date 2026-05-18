@@ -50,11 +50,11 @@
         </div>
         <div>
             <label for="StartDate">Start Date:</label>
-            <input type="datetime-local" id="StartDate" name="startDate" value="@Model.StartDate.ToString("yyyy-MM-ddTHH:mm")" required />
+            <input type="datetime-local" id="StartDate" name="startDate" value="@(Model.StartDate?.ToString("yyyy-MM-ddTHH:mm"))" required />
         </div>
         <div>
             <label for="EndDate">End Date:</label>
-            <input type="datetime-local" id="EndDate" name="endDate" value="@Model.EndDate.ToString("yyyy-MM-ddTHH:mm")" required />
+            <input type="datetime-local" id="EndDate" name="endDate" value="@(Model.EndDate?.ToString("yyyy-MM-ddTHH:mm"))" required />
         </div>
         <div>
             <label asp-for="Acts">Acts/Event title:</label>

@@ -145,8 +145,8 @@
                     var simpleEvent = new EventItem
                     {
                         name = child.Acts ?? "",
-                        startDate = child.StartDate,
-                        endDate = child.EndDate,
+                        startDate = child.StartDate ?? DateTime.MinValue,
+                        endDate = child.EndDate ?? DateTime.MinValue,
                         acts = child.Acts ?? "",
                         venue = child.Venues != null && child.Venues.Any()
                                 ? child.Venues.First().Name + ", " + child.Venues.First().Value("address") + ", " + child.Venues.First().Value("city") + ", " + child.Venues.First().Value("postcode")

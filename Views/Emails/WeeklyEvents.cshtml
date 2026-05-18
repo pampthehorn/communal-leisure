@@ -51,8 +51,8 @@
         <ul>
             @foreach (var e in Model.UpcomingEvents)
             {
-                var startDate = e.startDate.ToUniversalTime();
-                var endDate = e.endDate.ToUniversalTime();
+                var startDate = website.Helpers.UkDateHelper.ToUkTime(e.startDate);
+                var endDate = website.Helpers.UkDateHelper.ToUkTime(e.endDate);
                 string displayDate = $"{startDate.ToString(dateFormat)} - {(startDate.Date != endDate.Date ? endDate.ToString(dateFormat) : endDate.ToString("HH:mm"))}";
 
                 <li class="event-item">
@@ -77,8 +77,8 @@
         <ul>
             @foreach (var e in Model.RecentlyAddedEvents)
             {
-                var startDate = e.startDate.ToUniversalTime();
-                var endDate = e.endDate.ToUniversalTime();
+                var startDate = website.Helpers.UkDateHelper.ToUkTime(e.startDate);
+                var endDate = website.Helpers.UkDateHelper.ToUkTime(e.endDate);
                 string displayDate = $"{startDate.ToString(dateFormat)} - {(startDate.Date != endDate.Date ? endDate.ToString(dateFormat) : endDate.ToString("HH:mm"))}";
 
                 <li class="event-item">

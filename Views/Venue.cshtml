@@ -82,8 +82,8 @@
     <ul class="listing list-view">
         @foreach (var e in upcomingEvents)
         {
-            var startDate = e.StartDate.ToUniversalTime();
-            var endDate = e.EndDate.ToUniversalTime();
+            var startDate = UkDateHelper.ToUkTime(e.StartDate ?? DateTime.MinValue);
+            var endDate = UkDateHelper.ToUkTime(e.EndDate ?? DateTime.MinValue);
             string displayDate = $"{startDate.ToString(dateFormat)} - {(startDate.Date != endDate.Date ? endDate.ToString(dateFormat) : endDate.ToString("HH:mm"))}";
             var posterUrl = e.Poster != null ? e.Poster.Url() : "/images/placeholder.jpg";
 
@@ -120,8 +120,8 @@ else
     <ul>
         @foreach (var e in pastEvents)
         {
-            var startDate = e.StartDate.ToUniversalTime();
-            var endDate = e.EndDate.ToUniversalTime();
+            var startDate = UkDateHelper.ToUkTime(e.StartDate ?? DateTime.MinValue);
+            var endDate = UkDateHelper.ToUkTime(e.EndDate ?? DateTime.MinValue);
             string displayDate = $"{startDate.ToString(dateFormat)} - {(startDate.Date != endDate.Date ? endDate.ToString(dateFormat) : endDate.ToString("HH:mm"))} {endDate.Year}";
 
             <li><a href="@e.Url()">@displayDate</a> @e.Acts | @e.Description</li>

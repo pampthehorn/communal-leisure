@@ -1,0 +1,43 @@
+@using website.Controllers
+@model PromoterApprovalEmailModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+        }
+        a {
+            color: #000;
+            text-decoration: underline;
+        }
+        .approve-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #000;
+            color: #fff !important;
+            text-decoration: none;
+            font-weight: bold;
+            border: 0;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h2>Promoter Request</h2>
+    <p>A member has asked to become a promoter (i.e. add their own gigs without admin approval):</p>
+    <ul>
+        <li><strong>Name:</strong> @Model.MemberName</li>
+        <li><strong>Email:</strong> @Model.MemberEmail</li>
+    </ul>
+    <p>Click the link below to review and approve them. They'll be added to the promoter group and notified by email.</p>
+    <p style="margin: 24px 0;">
+        <a class="approve-btn" href="@Model.ApproveUrl">Review &amp; approve @Model.MemberName as a promoter</a>
+    </p>
+    <p><a href="https://communalleisure.com">communalleisure.com</a></p>
+</body>
+</html>

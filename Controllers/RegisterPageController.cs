@@ -96,36 +96,21 @@ namespace website.Controllers
                 if (member != null)
                 {
                     member.SetValue("emailVerified", true);
+                    member.IsApproved = true;
                     _memberService.Save(member);
-                }
 
-                // Send notification to admins
-                var eventsNode = _umbracoHelper.ContentAtRoot()
-                    .FirstOrDefault(m => m.ContentType.Alias == "events");
-
-                if (eventsNode != null)
-                {
-                    var events = new Events(eventsNode, _ipvfb);
-                    var approvalToken = RegistrationSurfaceController.GenerateApprovalToken(email);
-                    var approveLink = $"{Request.Scheme}://{Request.Host}/umbraco/surface/RegistrationSurface/ApproveMember"
-                        + $"?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(approvalToken)}";
-
-                    var adminEmailBody = await _viewRenderer.RenderViewToStringAsync(
-                        "~/Views/Emails/AdminApproval.cshtml",
-                        new AdminApprovalEmailModel { MemberName = member?.Name ?? email, MemberEmail = email, ApproveLink = approveLink });
-
-                    var notifyEmails = events.NotifyEmails?.ToList() ?? new List<string>();
-                    var toAddress = "comlesweb@gmail.com";
-
-                    await _emailService.SendEmailAsync(
-                        toAddress,
-                        $"New Member Registration: {member?.Name ?? email}",
-                        adminEmailBody,
-                        notifyEmails);
+                    if (member.GetValue<bool>("wantsToBeAPromoter"))
+                    {
+                        await RegistrationSurfaceController.SendPromoterRequestEmailAsync(
+                            member, _umbracoHelper, _ipvfb, _viewRenderer, _emailService,
+                            Request.Scheme, Request.Host.ToString());
+                    }
                 }
 
                 ViewBag.VerifyResult = "success";
-                ViewBag.VerifyMessage = "Your email has been verified. An admin will review your account shortly. You will receive an email when your account is approved.";
+                ViewBag.VerifyMessage = member != null && member.GetValue<bool>("wantsToBeAPromoter")
+                    ? "Your email has been verified. We've passed your promoter request to the admins — you'll hear back soon. In the meantime you can log in and browse."
+                    : "Your email has been verified. You can now log in.";
             }
             catch (Exception ex)
             {
@@ -136,10 +121,4 @@ namespace website.Controllers
         }
     }
 
-    public class AdminApprovalEmailModel
-    {
-        public string MemberName { get; set; } = string.Empty;
-        public string MemberEmail { get; set; } = string.Empty;
-        public string ApproveLink { get; set; } = string.Empty;
-    }
 }

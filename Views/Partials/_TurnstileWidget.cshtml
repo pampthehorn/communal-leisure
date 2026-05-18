@@ -1,0 +1,9 @@
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+@{
+    var siteKey = Configuration["Turnstile:SiteKey"];
+}
+@if (!string.IsNullOrWhiteSpace(siteKey))
+{
+    <div class="cf-turnstile" data-sitekey="@siteKey"></div>
+}

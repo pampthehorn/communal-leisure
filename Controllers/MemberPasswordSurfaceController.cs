@@ -23,6 +23,7 @@ namespace website.Controllers
         private readonly IMemberManager _memberManager;
         private readonly IEmailService _emailService;
         private readonly IPublishedContentQuery _publishedContentQuery;
+        private readonly ITurnstileService _turnstileService;
 
         public MemberPasswordSurfaceController(
             IUmbracoContextAccessor umbracoContextAccessor,
@@ -33,12 +34,14 @@ namespace website.Controllers
             IPublishedUrlProvider publishedUrlProvider,
             IMemberManager memberManager,
             IEmailService emailService,
-            IPublishedContentQuery publishedContentQuery)
+            IPublishedContentQuery publishedContentQuery,
+            ITurnstileService turnstileService)
             : base(umbracoContextAccessor, databaseFactory, services, appCaches, profilingLogger, publishedUrlProvider)
         {
             _memberManager = memberManager;
             _emailService = emailService;
             _publishedContentQuery = publishedContentQuery;
+            _turnstileService = turnstileService;
         }
 
         [HttpPost]
@@ -47,6 +50,14 @@ namespace website.Controllers
         {
             if (!ModelState.IsValid)
             {
+                return CurrentUmbracoPage();
+            }
+
+            var turnstileToken = Request.Form["cf-turnstile-response"].ToString();
+            var remoteIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+            if (!await _turnstileService.VerifyAsync(turnstileToken, remoteIp))
+            {
+                ModelState.AddModelError(string.Empty, "Please complete the verification challenge and try again.");
                 return CurrentUmbracoPage();
             }
 
@@ -86,6 +97,14 @@ namespace website.Controllers
         {
             if (!ModelState.IsValid)
             {
+                return CurrentUmbracoPage();
+            }
+
+            var turnstileToken = Request.Form["cf-turnstile-response"].ToString();
+            var remoteIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+            if (!await _turnstileService.VerifyAsync(turnstileToken, remoteIp))
+            {
+                ModelState.AddModelError(string.Empty, "Please complete the verification challenge and try again.");
                 return CurrentUmbracoPage();
             }
 

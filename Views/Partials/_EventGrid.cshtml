@@ -22,7 +22,7 @@
                 <span title="add to calendar">📅</span>
                 <time>@displayDate</time>
             </p>
-            <h3>@e.name</h3>
+            <h3>@e.name @if (e.sellsTicketsOnline) { <span class="tickets-online-icon" title="Tickets available online">🎟️</span> }</h3>
             <p>@e.description</p>
             <p>@if (!string.IsNullOrEmpty(e.venueUrl)) { <a href="@e.venueUrl">@e.venue</a> } else { @e.venue } @if (!string.IsNullOrEmpty(e.venueAddress)) { <span>@e.venueAddress</span> }</p>
             <a href="@e.link" target="_blank">@e.link</a>
